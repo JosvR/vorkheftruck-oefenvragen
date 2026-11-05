@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.00.00';
+const VERSION = 'V01.01.00';
 const STORAGE_KEY = 'dts-heftruck-oefenen-' + VERSION;
 const GROUPS = [
   {prefix: 'A', name: 'Arbowet', description: 'Plichten, RI&E en veilig werken'},
@@ -95,7 +95,7 @@ function renderMap() {
 
 function artwork(q) {
   if (!q.image) return '';
-  return `<figure class="question-art"><img src="./img/${q.image}.webp" alt="${q.alt}"><figcaption>Beeld bij dit onderwerp</figcaption></figure>`;
+  return `<figure class="question-art${q.feedbackImage ? ' diagram' : ''}"><img src="./img/${q.image}.webp" alt="${q.alt}"><figcaption>Beeld bij dit onderwerp</figcaption></figure>`;
 }
 
 function limitText(q) {
@@ -218,7 +218,10 @@ function renderReview() {
           const label = right ? (picked ? 'Juist gekozen · +1 punt' : 'Juist antwoord gemist') : picked ? 'Onjuist gekozen' : '';
           return `<li class="${kind}"><span class="option-letter" aria-hidden="true">${String.fromCharCode(65 + j)}</span><div>${option}${label ? `<small>${label}</small>` : ''}</div></li>`;
         }).join('')}</ul>
-        <div class="feedback"><h3>Uitleg</h3><p>${q.feedback}</p></div>
+        <div class="feedback">
+          <h3>Uitleg</h3><p>${q.feedback}</p>
+          ${q.feedbackImage ? `<img class="feedback-image" src="./img/${q.feedbackImage}.webp" alt="${q.feedbackAlt}" loading="lazy" width="425" height="464">` : ''}
+        </div>
       </div>
     </details>`;
   }).join('');
