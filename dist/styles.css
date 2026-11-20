@@ -37,7 +37,7 @@ p { line-height: 1.57; }
   white-space: nowrap;
 }
 .skip-link:focus { position: fixed; z-index: 2; left: 1rem; top: 1rem; padding: .8rem; background: white; }
-.site-header { background: var(--paper); border-bottom: 1px solid var(--line); }
+.site-header { position: sticky; top: 0; z-index: 1; background: var(--paper); border-bottom: 1px solid var(--line); }
 .header-inner { min-height: 72px; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .brand { background: none; border: 0; padding: 5px 0; border-radius: 4px; }
 .brand img { width: 159px; height: auto; }
@@ -311,4 +311,34 @@ dialog .actions { justify-content: end; }
   .result-groups { grid-template-columns: 1fr; }
   .review-item summary { padding: 10px; grid-template-columns: 19px minmax(0, 1fr) auto auto; gap: 5px; font-size: .9rem; }
   .review-body { padding: 10px; }
+}
+
+.topic-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 135px;
+  text-align: left;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.topic-link:hover, .topic-link:focus-visible { border-color: var(--accent); background: #f5fbfd; }
+.topic-count { color: var(--muted); font-size: .82rem; }
+.topic-link strong { font-size: 1.08rem; line-height: 1.25; }
+.topic-cta { color: var(--blue); margin-top: auto; font-size: .88rem; font-weight: 750; }
+.all-actions { margin-top: 16px; }
+.verdict { font-size: 1.1rem; margin: 3px 0 12px; }
+.verdict:focus, #topics-title:focus { outline: none; }
+.verdict, #topics-title { scroll-margin-top: 82px; }
+.question-content > .feedback { margin-bottom: 16px; }
+.review-heading { padding-top: 20px; }
+.btn:disabled { background: #e6e5ec; color: #635e72; cursor: default; }
+.dialog-version { display: block; text-align: right; margin-bottom: 6px; }
+@media (max-width: 600px) {
+  .verdict, #topics-title { scroll-margin-top: 66px; }
+  .topic-grid { gap: 8px; }
+  .topic-link strong { font-size: 1rem; }
+  .result-banner { flex-wrap: wrap; }
+  .score-number span { white-space: normal; }
 }

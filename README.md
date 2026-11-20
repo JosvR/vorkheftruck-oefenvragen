@@ -1,6 +1,26 @@
 # Heftruck en reachtruck oefenen
 
-Nederlandstalige oefenapp voor zelfstandige voorbereiding op de DTS-training. Versie **V01.01.00**.
+Nederlandstalige oefenapp voor zelfstandige voorbereiding op de DTS-training. Versie **V01.02.00**.
+
+## Oefenen per onderwerp
+
+De 57 vragen zijn verdeeld over acht oefenblokken van vijf tot acht vragen. Deelnemers kiezen zelf een onderwerp en klikken bij iedere vraag op **Controleer antwoord** voor hun punten, de juiste en gemiste keuzes en de uitleg. Een blokoverzicht is ook tussentijds beschikbaar. Via **Herhaal gemiste vragen** oefenen ze alleen de vragen waarop ze eerder punten lieten liggen. Bij een herhaling telt het laatst gecontroleerde antwoord. De volledige reeks blijft beschikbaar via **Alle 57 vragen oefenen**.
+
+Antwoorden en nog niet gecontroleerde keuzes worden in dezelfde browser op hetzelfde webadres bewaard. Deze versie leest ook de voortgang van V01.01.00 op dat adres. Een oefenblok opnieuw beginnen wist alleen de antwoorden in dat blok. Opnieuw beginnen vanuit **Alle vragen** wist de hele reeks.
+
+## Publiceren via Cloudflare Workers
+
+Deze GitHub-repository hoort bij de bestaande Worker **vorkheftruck-oefenvragen**. Workers Builds kan de bestanden rechtstreeks vanuit GitHub publiceren.
+
+| Instelling in Cloudflare | Waarde |
+| --- | --- |
+| Git-repository | `JosvR/vorkheftruck-oefenvragen` |
+| Productiebranch | `main` |
+| Root directory | Hoofdmap van de repository (`/`) |
+| Build command | Leeg |
+| Deploy command | `npx wrangler deploy` |
+
+`wrangler.jsonc` in de hoofdmap bevat de Worker-naam en de te publiceren map `./dist`. Een bestaande deployopdracht met `--assets ./dist` gebruikt dezelfde bestanden. Bij een actieve Git-koppeling start Cloudflare na een wijziging op `main` de publicatie. [Build-instellingen van Cloudflare](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)
 
 ## Publiceren via Netlify
 
@@ -9,7 +29,7 @@ Nederlandstalige oefenapp voor zelfstandige voorbereiding op de DTS-training. Ve
 3. Laat **Base directory** en **Build command** leeg. De **Publish directory** is **dist**. Die map staat ook in `netlify.toml`.
 4. Kies **Deploy**. Updates op `main` worden bij een actieve GitHub-koppeling automatisch gepubliceerd.
 
-De app bestaat uit statische bestanden. Er zijn geen accounts, database, serverfuncties, omgevingsvariabelen of installatiestappen nodig. Antwoorden blijven in dezelfde browser zodat de deelnemer later verder kan. Met **Opnieuw beginnen** wordt de vorige poging op dat apparaat gewist.
+De app bestaat uit statische bestanden. Er zijn geen accounts, database, serverfuncties, omgevingsvariabelen of installatiestappen nodig. Antwoorden blijven in dezelfde browser zodat de deelnemer later verder kan.
 
 ## Oefenvragen
 

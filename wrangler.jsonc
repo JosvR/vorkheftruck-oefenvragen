@@ -1,0 +1,7 @@
+{
+  "name": "vorkheftruck-oefenvragen",
+  "compatibility_date": "2026-11-20",
+  "assets": {
+    "directory": "./dist"
+  }
+}

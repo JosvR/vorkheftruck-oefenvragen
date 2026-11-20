@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#201649">
-  <meta name="description" content="Bereid je voor op je heftruck- of reachtrucktraining met 57 Nederlandse oefenvragen van Deltalinqs Training & Services.">
+  <meta name="description" content="Oefen voor je heftruck- of reachtrucktraining. Kies een onderwerp en krijg na iedere vraag uitleg.">
   <title>Heftruck en reachtruck oefenen | Deltalinqs Training & Services</title>
   <link rel="icon" href="./img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
@@ -39,13 +39,14 @@
       </div>
     </details>
   </footer>
-  <dialog id="confirm">
+  <dialog id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <span class="version dialog-version"></span>
     <form method="dialog">
       <h2 id="confirm-title"></h2>
       <p id="confirm-text"></p>
       <div class="actions">
         <button type="submit" value="cancel" class="btn secondary" autofocus>Annuleren</button>
-        <button type="submit" value="ok" class="btn primary" id="confirm-ok"></button>
+        <button type="submit" value="ok" class="btn primary" id="confirm-ok">Begin opnieuw</button>
       </div>
     </form>
   </dialog>
