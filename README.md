@@ -1,12 +1,14 @@
 # Heftruck en reachtruck oefenen
 
-Nederlandstalige oefenapp voor zelfstandige voorbereiding op de DTS-training. Versie **V01.02.00**.
+Nederlandstalige oefenapp voor zelfstandige voorbereiding op de DTS-training. Versie **V01.03.00**.
 
 ## Oefenen per onderwerp
 
-De 57 vragen zijn verdeeld over acht oefenblokken van vijf tot acht vragen. Deelnemers kiezen zelf een onderwerp en klikken bij iedere vraag op **Controleer antwoord** voor hun punten, de juiste en gemiste keuzes en de uitleg. Een blokoverzicht is ook tussentijds beschikbaar. Via **Herhaal gemiste vragen** oefenen ze alleen de vragen waarop ze eerder punten lieten liggen. Bij een herhaling telt het laatst gecontroleerde antwoord. De volledige reeks blijft beschikbaar via **Alle 57 vragen oefenen**.
+De 57 vragen staan in acht oefenblokken van vijf tot acht vragen. Elk onderwerp heeft een voortgangsbalk met het aantal beantwoorde vragen. De deelnemer kan antwoorden wijzigen en de ronde in dezelfde browser op hetzelfde webadres hervatten.
 
-Antwoorden en nog niet gecontroleerde keuzes worden in dezelfde browser op hetzelfde webadres bewaard. Deze versie leest ook de voortgang van V01.01.00 op dat adres. Een oefenblok opnieuw beginnen wist alleen de antwoorden in dat blok. Opnieuw beginnen vanuit **Alle vragen** wist de hele reeks.
+Na **Afronden en resultaat bekijken** verschijnen de score en het aantal volledig juiste antwoorden voor het onderwerp. Bij het nakijken kan de deelnemer door alle antwoorden bladeren of alleen de foute en gedeeltelijk goede antwoorden bekijken. Elk juist gekozen deelantwoord levert één punt op. De route **Alle 57 vragen per onderwerp oefenen** geeft na elk onderwerp de score en aan het einde een totaaloverzicht.
+
+Voor een herhaling kiest de deelnemer of foute en deels goede vragen, volledig goede vragen of beide groepen meegaan. De herhaling start met lege antwoordvelden. Bij afronding tellen de nieuwe antwoorden mee voor het onderwerp. Een onafgeronde herhaling kan later worden hervat. Opgeslagen antwoorden uit V01.01.00 en V01.02.00 worden ingelezen.
 
 ## Publiceren via Cloudflare Workers
 

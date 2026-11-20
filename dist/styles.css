@@ -342,3 +342,11 @@ dialog .actions { justify-content: end; }
   .result-banner { flex-wrap: wrap; }
   .score-number span { white-space: normal; }
 }
+
+.topic-link progress { margin: 0 0 4px; }
+.result-actions { margin: 14px 0 22px; }
+.repeat-options { display: grid; gap: 5px; border: 0; border-top: 1px solid var(--line); padding: 12px 0; margin: 16px 0 0; }
+.repeat-options legend { color: var(--ink); font-weight: 750; padding: 0 10px 0 0; }
+.repeat-options label { display: flex; align-items: center; gap: 9px; min-height: 36px; width: fit-content; cursor: pointer; }
+.repeat-options input { width: 18px; height: 18px; accent-color: var(--accent); }
+.text-button:disabled { color: var(--muted); cursor: default; opacity: .7; text-decoration: none; }
