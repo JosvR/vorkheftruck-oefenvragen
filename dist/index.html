@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./styles.css">
   <script src="./questions.js" defer></script>
   <script src="./werkorders.js" defer></script>
+  <script src="./terminal.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -19,7 +20,9 @@
       <button class="brand" type="button" data-action="home" aria-label="Naar de startpagina">
         <img src="./img/logo.webp" width="194" height="52" alt="Deltalinqs Training &amp; Services">
       </button>
-      <span class="version" id="version"></span>
+      <div class="header-tools"><button id="sound-switch" class="sound-switch" type="button" aria-pressed="false">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path class="sound-on" d="M15 8q5 4 0 8m3-11q8 7 0 14"/><path class="sound-off" d="m16 9 5 6m0-6-5 6"/></svg>
+        <span>Geluid uit</span></button><span class="version" id="version"></span></div>
     </div>
   </header>
   <main id="main" class="shell" tabindex="-1"></main>
@@ -44,7 +47,7 @@
     <span class="version dialog-version"></span>
     <form method="dialog">
       <h2 id="confirm-title">Alle onderwerpen opnieuw oefenen?</h2>
-      <p id="confirm-text">De antwoorden en portofoonkeuzes van deze dienst worden gewist. Je bewaarde bespreekpunten blijven in je logboek.</p>
+      <p id="confirm-text">Je begint met nul hefpunten. De antwoorden en portofoonkeuzes van deze dienst worden gewist. Je bewaarde bespreekpunten blijven in je logboek.</p>
       <div class="actions">
         <button type="submit" value="cancel" class="btn secondary" autofocus>Annuleren</button>
         <button type="submit" value="ok" class="btn primary" id="confirm-ok">Begin opnieuw</button>

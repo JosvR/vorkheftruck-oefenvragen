@@ -1,6 +1,6 @@
 # Vorkheftruck oefenvragen · Jouw dienst op de terminal
 
-Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.04.01**.
+Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.05.00**.
 
 ## Zo oefent een deelnemer
 
@@ -11,6 +11,14 @@ Na elke werkorder kunnen deelnemers alle antwoorden bekijken of alleen de vragen
 Deelnemers kunnen vragen bewaren om met de trainer te bespreken. Die bespreekpunten komen met uitleg in hun persoonlijke logboek. Ze kunnen een werkorder gericht herhalen met foute, deels goede of volledig goede antwoorden. Tijdens een herhaling blijft de werkorder als afgerond meetellen. Een nieuwe oefendienst begint met lege werkorders en behoudt de bespreekpunten.
 
 De voortgang blijft lokaal op hetzelfde webadres, in dezelfde browser. De app kan ook voortgang van V01.01.00 tot en met V01.03.00 inlezen.
+
+## Beeld, spelpunten en geluid
+
+De hefmeter telt unieke vragen met een antwoord, maximaal 57 per dienst. Ook een fout of gedeeltelijk antwoord levert één hefpunt op. Wissen van een antwoord in de eerste ronde draait dat punt terug. Herhalen levert geen extra hefpunten op. De antwoordpunten voor de inhoudelijke feedback blijven apart. De meter wordt afgeleid van de bestaande antwoorden, ook voor deelnemers die eerder begonnen.
+
+Elke werkorder heeft een nieuw illustratief werkplekbeeld en een kijkvraag voor de nabespreking. Bij vier werkorders wijst de deelnemer de plek in het beeld aan en krijgt een aanwijzing of uitleg. De havenfoto en de acht werkplekbeelden zijn voor deze app gegenereerd. De oorspronkelijke lesafbeeldingen blijven bij de vragen. Bij werkorders 3 en 6 kan de deelnemer een korte GIF over uitzwaai of lastzwaartepuntafstand zelf starten. De stilstaande weergave bevat dezelfde kerninformatie. De heftruck op de meter verbeeldt de spelvoortgang.
+
+Geluid staat bij het eerste bezoek uit. De knop bovenaan schakelt de korte hefgeluiden, de portofoontoon en het eindsignaal aan of uit. De browser onthoudt deze voorkeur. Alle beelden, animaties en geluiden werken lokaal met de bestanden in `dist`.
 
 ## Publiceren via Cloudflare Workers
 

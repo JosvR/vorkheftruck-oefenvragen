@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.04.01';
+const VERSION = 'V01.05.00';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
@@ -166,6 +166,7 @@ function finishRound() {
   b.result = {...b.result, ...r.answers};
   b.lastIds = r.ids;
   delete b.round;
+  playCue('done');
   showResult();
 }
 function showResult() {
@@ -181,6 +182,7 @@ function topicCard(group) {
   const max = r?.ids.length || group.ids.length;
   const label = r ? (b.result ? 'Herhaling' : 'In uitvoering') : complete(group) ? 'Afgerond' : 'Open';
   return `<button class="order-card" data-action="open" data-key="${group.key}">
+    <span class="order-thumbnail">${scenePhoto(group.key)}</span>
     <span class="order-top"><span class="order-code">WO ${orderNumber(group)}</span><span class="order-status ${r ? 'active' : complete(group) ? 'done' : ''}">${label}</span></span>
     <strong>${order.title}</strong><span class="order-topic">${group.name}</span>
     <span class="order-bottom"><span>${order.location}</span><span>${count}/${max}</span></span>
@@ -197,22 +199,22 @@ function renderHome() {
     startLabel = active ? `Ga verder met werkorder ${number}` : `Start met werkorder ${number}`;
   }
   return `<section class="shift-hero">
-    <img class="shift-photo" src="./img/hero.webp" alt="Bovenaanzicht van een heftruck tussen twee stellingen">
-    <div class="shift-copy"><p class="kicker">Heftruck &amp; reachtruck</p>
-      <h1 id="screen-title" tabindex="-1">Jouw dienst op<br>de terminal</h1>
+    <img class="shift-photo" src="./img/terminal/kade.webp" alt="Een heftruck bij de verlichte loods aan de kade bij het begin van de dienst" fetchpriority="high">
+    <div class="shift-copy"><p class="kicker">Oefendienst · Heftruck &amp; reachtruck</p>
+      <h1 id="screen-title" tabindex="-1">Jouw dienst op<br><em>de terminal</em></h1>
       <p>${finished === TOPICS.length
         ? `Je hebt alle ${TOPICS.length} werkorders afgerond. Open je logboek en neem je bewaarde vragen mee naar de praktijktraining.`
-        : `Rond vóór de praktijktraining alle ${TOPICS.length} werkorders af. Elke werkorder begint met een situatie op de werkvloer. In totaal beantwoord je ${QUESTIONS.length} oefenvragen. Je mag fouten maken en opnieuw oefenen.`}</p>
+        : `Rond vóór de praktijktraining alle ${TOPICS.length} werkorders af. Je haalt een truck op, beoordeelt een pompkist en maakt de vracht klaar. Elke beantwoorde vraag levert één hefpunt op en tilt je last een stukje hoger.`}</p>
       <div class="actions"><button class="btn shift-start" data-action="series">${startLabel}</button>
       <button class="hero-link" data-action="topics">Kies een werkorder</button></div>
     </div></section>
-    <div class="shift-strip"><div><strong>${finished} van ${TOPICS.length} werkorders afgerond</strong>
+    <div class="shift-dashboard">${liftMeter()}<div class="shift-strip"><div><p class="kicker">Jouw dienst</p><strong>${finished} van ${TOPICS.length} werkorders afgerond</strong>
       <div class="segments" aria-hidden="true">${TOPICS.map(group => `<i class="${complete(group) ? 'done' : block(group)?.round ? 'started' : ''}"></i>`).join('')}</div>
-    </div><button class="text-button" data-action="overview">Mijn logboek${progress.savedIds.length ? ' (' + progress.savedIds.length + ')' : ''}</button></div>
+    </div><button class="text-button" data-action="overview">Mijn logboek${progress.savedIds.length ? ' (' + progress.savedIds.length + ')' : ''}</button></div></div>
     ${finished < TOPICS.length ? `<section class="work-instructions" aria-labelledby="instructions-title">
       <h2 id="instructions-title">Zo pak je een werkorder aan</h2>
       <ol>
-        <li><strong>Lees de werksituatie.</strong> Kies daarna <b>Begin met oefenen</b> en beantwoord de vragen.</li>
+        <li><strong>Lees de werksituatie.</strong> Kies daarna <b>Begin met oefenen</b> en beantwoord de vragen. Elke vraag telt één keer mee voor de ${QUESTIONS.length} hefpunten, ook als je antwoord fout is.</li>
         <li><strong>Bekijk je feedback.</strong> Kies na de laatste vraag <b>Rond de werkorder af</b>. Lees de uitleg en oefen lastige vragen nog eens.</li>
         <li><strong>Neem je vragen mee.</strong> Iets bespreken met je trainer? Kies bij de uitleg <b>Bewaar voor de training</b>. De vraag staat dan in <b>Mijn logboek</b>. Ga daarna verder met de volgende werkorder.</li>
       </ol>
@@ -236,7 +238,7 @@ function renderBriefing() {
   const order = WORK_ORDERS[topic.key];
   return `<section class="work-area"><button class="text-button back-link" data-action="topics">Werkorderbord</button>
     <article class="brief-card"><div class="brief-top"><span class="order-code">WO ${orderNumber(topic)}</span><span>${order.location}</span></div>
-    <h1 id="screen-title" tabindex="-1">${order.title}</h1><p class="brief-story">${order.briefing}</p>
+    <div class="brief-scene">${scenePhoto(topic.key)}<div class="brief-scene-copy"><p class="kicker">Jouw opdracht</p><h1 id="screen-title" tabindex="-1">${order.title}</h1><p class="brief-story">${order.briefing}</p></div></div>
     <div class="brief-start"><div><strong>${topic.name}</strong><span>${topic.ids.length} vragen · Feedback na de werkorder</span></div>
     <button class="btn primary" data-action="begin-order">Begin met oefenen</button></div></article></section>`;
 }
@@ -298,9 +300,10 @@ function renderQuestion() {
     <details class="question-map"><summary>Vragenoverzicht <span id="round-count">${count}/${r.ids.length} beantwoord</span></summary>
     <div class="map-sections"><div class="map-grid">${r.ids.map((key,i) =>
       `<button class="map-button${r.answers[key] ? ' filled' : ''}" data-action="jump" data-id="${key}" ${key === id ? 'aria-current="step"' : ''} aria-label="Vraag ${i+1}, ${r.answers[key] ? 'beantwoord' : 'open'}">${i+1}</button>`).join('')}</div></div></details>
-    <article class="question-card"><div class="question-layout${q.image ? ' with-art' : ''}">
+    <article class="question-card playing-card"><div class="question-layout${q.image ? ' with-art' : ''}">
       <h1 id="screen-title" tabindex="-1">${q.prompt}</h1>${artwork(q)}
       <div class="question-content">${choicesForm(q, choices)}</div></div>
+      ${liftMeter(true)}
       <div class="question-actions"><button class="text-button" data-action="${position ? 'previous' : 'topics'}">${position ? 'Vorige vraag' : 'Werkorderbord'}</button>
       <button class="btn primary" data-action="advance" ${choices.length ? '' : 'disabled'}>${advanceLabel(r)}</button></div>
     </article></section>`;
@@ -325,6 +328,7 @@ function updateSelection() {
   const marker = main.querySelector('[aria-current="step"]');
   marker.classList.toggle('filled', Boolean(choices.length));
   marker.setAttribute('aria-label', `Vraag ${r.ids.indexOf(id)+1}, ${choices.length ? 'beantwoord' : 'open'}`);
+  updateLiftMeter();
   save();
 }
 
@@ -341,21 +345,21 @@ function renderResult() {
   const focusQuestion = byId.get(topic.ids.find(missed) || topic.ids[0]);
   return `<section class="work-area result">
     <button class="text-button back-link" data-action="topics">Werkorderbord</button>
-    <header class="result-banner"><div><p class="eyebrow">WO ${orderNumber(topic)} afgerond · ${finished} van ${TOPICS.length} werkorders</p>
-      <h1 id="screen-title" tabindex="-1">${order.title}</h1><p>${topic.name}</p></div></header>
+    <header class="result-banner signed-order"><div><p class="eyebrow">WO ${orderNumber(topic)} afgerond · ${finished} van ${TOPICS.length} werkorders</p>
+      <h1 id="screen-title" tabindex="-1">${order.title}</h1><p>${topic.name}</p></div><div class="completion-stamp"><span>Afgerond</span><strong>WO ${orderNumber(topic)}</strong></div></header>
     <section class="result-body"><h2>Wat neem je mee?</h2>
       <p class="result-intro">${errors ? `${correct} van de ${topic.ids.length} vragen volledig goed. Bekijk de uitleg bij ${errors === 1 ? 'de vraag die je nog kunt aanscherpen' : 'de '+errors+' vragen die je nog kunt aanscherpen'}.` : 'Je hebt alle vragen volledig goed. Bij het terugkijken lees je de uitleg en kun je vragen bewaren voor de praktijktraining.'}</p>
       <div class="debrief-example"><p class="order-code">Uit jouw werkorder</p><h3>${focusQuestion.prompt}</h3><p>${focusQuestion.feedback}</p></div>
       <div class="actions result-actions"><button class="btn ${errors ? 'primary' : 'secondary'}" data-action="review-missed" ${errors ? '' : 'disabled'}>Bekijk mijn leerpunten (${errors})</button>
         <button class="btn ${errors ? 'secondary' : 'primary'}" data-action="review-all">Bekijk alle ${topic.ids.length} antwoorden</button></div>
       <details class="details-panel"><summary>Resultaat en opnieuw oefenen</summary>
-      <p>${totalPoints(topic.ids,b.result)} van ${maxPoints(topic.ids)} punten.</p>
-      ${b.lastIds?.length && b.lastIds.length < topic.ids.length ? `<p>Laatste herhaling · ${totalPoints(b.lastIds,b.result)} van ${maxPoints(b.lastIds)} punten.</p>` : ''}
+      <p>${totalPoints(topic.ids,b.result)} van ${maxPoints(topic.ids)} antwoordpunten.</p>
+      ${b.lastIds?.length && b.lastIds.length < topic.ids.length ? `<p>Laatste herhaling · ${totalPoints(b.lastIds,b.result)} van ${maxPoints(b.lastIds)} antwoordpunten.</p>` : ''}
       <fieldset class="repeat-options"><legend>Welke vragen neem je mee?</legend>
         <label><input id="repeat-missed" type="checkbox" ${repeatMissed ? 'checked' : ''} ${errors ? '' : 'disabled'}> Fout of deels goed (${errors})</label>
         <label><input id="repeat-right" type="checkbox" ${repeatRight ? 'checked' : ''} ${correct ? '' : 'disabled'}> Volledig goed (${correct})</label></fieldset>
       <button class="btn secondary" data-action="repeat" ${repeatCount ? '' : 'disabled'}>${repeatButtonText(repeatCount)}</button></details>
-    </section>${renderRadio()}
+    </section>${photoDebrief()}${teachingClip(topic.key)}${renderRadio()}
     <div class="actions all-actions"><button class="btn primary" data-action="${next ? 'series' : 'overview'}">${next ? 'Verder met WO '+orderNumber(next)+' · '+WORK_ORDERS[next.key].title : 'Bekijk je dienstoverdracht'}</button>
       <button class="text-button" data-action="topics">Werkorderbord</button></div></section>`;
 }
@@ -381,7 +385,7 @@ function renderOverview() {
   return `<section class="work-area result"><button class="text-button back-link" data-action="topics">Werkorderbord</button>
     <header class="result-banner"><div><p class="eyebrow">Logboek · Intern transport</p><h1 id="screen-title" tabindex="-1">${allDone ? 'Dienst overgedragen' : 'Mijn logboek'}</h1>
     <p>${allDone ? `Je hebt alle ${QUESTIONS.length} vragen geoefend. Neem je bespreekpunten mee naar de praktijktraining.` : `${finished.length} van de ${TOPICS.length} werkorders afgerond.`}</p></div></header>
-    <section class="result-body"><h2>Bespreken tijdens de training</h2>
+    ${liftMeter()}<section class="result-body"><h2>Bespreken tijdens de training</h2>
     ${saved.length ? `<ul class="log-list">${saved.map(q => `<li><details><summary>${q.prompt}</summary><p>${q.feedback}</p>
       <button class="text-button" data-action="remove-note" data-id="${q.id}">Verwijder dit bespreekpunt</button></details></li>`).join('')}</ul>` :
       '<p class="result-intro">Wil je iets aan de trainer vragen? Kies bij de uitleg van een vraag voor ‘Bewaar voor de training’. Je vindt die vragen hier terug.</p>'}
@@ -435,7 +439,10 @@ document.addEventListener('click', event => {
       save();
       setScreen('question');
       break;
+    case 'spot': inspectSpot(button, event); break;
+    case 'play-clip': playClip(button); break;
     case 'radio': {
+      playCue('radio');
       const choice = Number(button.dataset.index);
       block().radio = choice;
       save();
@@ -480,4 +487,5 @@ document.addEventListener('click', event => {
       break;
   }
 });
+setupSound();
 main.innerHTML = renderHome();
