@@ -1,14 +1,16 @@
-# Heftruck en reachtruck oefenen
+# Vorkheftruck oefenvragen · Jouw dienst op de terminal
 
-Nederlandstalige oefenapp voor zelfstandige voorbereiding op de DTS-training. Versie **V01.03.00**.
+Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.04.00**.
 
-## Oefenen per onderwerp
+## Zo oefent een deelnemer
 
-De 57 vragen staan in acht oefenblokken van vijf tot acht vragen. Elk onderwerp heeft een voortgangsbalk met het aantal beantwoorde vragen. De deelnemer kan antwoorden wijzigen en de ronde in dezelfde browser op hetzelfde webadres hervatten.
+De dienst bestaat uit acht werkorders met samen 57 vragen. Elke werkorder begint met een situatie uit de haven of de procesindustrie. Deelnemers volgen de voorgestelde route of kiezen zelf een onderwerp. Het werkorderbord laat zien wat openstaat en waar ze gebleven zijn.
 
-Na **Afronden en resultaat bekijken** verschijnen de score en het aantal volledig juiste antwoorden voor het onderwerp. Bij het nakijken kan de deelnemer door alle antwoorden bladeren of alleen de foute en gedeeltelijk goede antwoorden bekijken. Elk juist gekozen deelantwoord levert één punt op. De route **Alle 57 vragen per onderwerp oefenen** geeft na elk onderwerp de score en aan het einde een totaaloverzicht.
+Na elke werkorder kunnen deelnemers alle antwoorden bekijken of alleen de vragen waarop ze nog iets kunnen leren. Bij elke vraag zien ze hun keuzes, de juiste antwoorden en de uitleg. De portofoonvraag aan het eind laat ze twee reacties voor een collega uitproberen. Elke reactie krijgt eigen feedback. Een werkorder telt als afgerond zodra de deelnemer de reeks heeft afgemaakt, ongeacht de score of portofoonkeuze.
 
-Voor een herhaling kiest de deelnemer of foute en deels goede vragen, volledig goede vragen of beide groepen meegaan. De herhaling start met lege antwoordvelden. Bij afronding tellen de nieuwe antwoorden mee voor het onderwerp. Een onafgeronde herhaling kan later worden hervat. Opgeslagen antwoorden uit V01.01.00 en V01.02.00 worden ingelezen.
+Deelnemers kunnen vragen bewaren om met de trainer te bespreken. Die bespreekpunten komen met uitleg in hun persoonlijke logboek. Ze kunnen een werkorder gericht herhalen met foute, deels goede of volledig goede antwoorden. Tijdens een herhaling blijft de werkorder als afgerond meetellen. Een nieuwe oefendienst begint met lege werkorders en behoudt de bespreekpunten.
+
+De voortgang blijft lokaal op hetzelfde webadres, in dezelfde browser. De app kan ook voortgang van V01.01.00 tot en met V01.03.00 inlezen.
 
 ## Publiceren via Cloudflare Workers
 
@@ -40,5 +42,3 @@ De app bestaat uit statische bestanden. Er zijn geen accounts, database, serverf
 - De vraagstammen zijn in het Nederlands geformuleerd en vergeleken met examenversies 3.1 en 3.2. Britse regelgeving is naar Nederlandse regelgeving of een expliciete bedrijfsafspraak vertaald. Lokale voorschriften en truckspecificaties zijn in de vraag opgenomen waar ze het antwoord bepalen.
 - Bij ABA-meerkeuzevraag 3 (meerdere antwoorden) zijn twee gemarkeerde risico’s op hellingen samengevoegd. De bron vraagt om vier antwoorden en markeert er vijf. De oefenvraag heeft vier correcte keuzes.
 - Eén punt per juist gekozen (deel)antwoord. Er geldt geen cesuur. Alle onjuiste, gemiste en juiste opties worden bij het nakijken herkenbaar gemarkeerd. Het lesmateriaal van DTS is gebruikt voor het logo en de afbeeldingen. Verwijzingen naar Nederlandse vak- en regelgeving staan in de app onder **Bronnen en begrippen**.
-
-Versie V01.01.00 bevat 57 vragen voor maximaal 90 punten. Door de gewijzigde vragenbank start deze versie met een nieuwe oefenronde.

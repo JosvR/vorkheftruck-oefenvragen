@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.03.00';
+const VERSION = 'V01.04.00';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
@@ -39,9 +39,7 @@ function newRound(ids, answers = {}, current = null) {
   return {ids, answers, current: ids.includes(current) ? current : ids.find(id => !answers[id]) || ids[0]};
 }
 
-function emptyProgress() {
-  return {blocks: {}, last: null, series: false};
-}
+function emptyProgress() { return {blocks: {}, last: null, savedIds: []}; }
 
 // In de vorige versie werden antwoorden los van elkaar nagekeken.
 // Alleen onderwerpen waarvan alle antwoorden al waren nagekeken krijgen een resultaat.
@@ -76,7 +74,6 @@ function migrateProgress(old) {
     }
     data.blocks[group.key] = block;
   }
-  data.series = old.last === 'alles';
   data.last = topics.has(old.last) ? old.last : TOPICS.find(g => g.ids.includes(old.rounds?.alles?.current))?.key || null;
   return data;
 }
@@ -87,7 +84,7 @@ function loadProgress() {
     if (saved?.blocks) {
       const clean = emptyProgress();
       clean.last = topics.has(saved.last) ? saved.last : null;
-      clean.series = saved.series === true;
+      if (Array.isArray(saved.savedIds)) clean.savedIds = [...new Set(saved.savedIds.filter(id => byId.has(id)))];
       for (const group of TOPICS) {
         const source = saved.blocks[group.key];
         if (!source) continue;
@@ -95,6 +92,7 @@ function loadProgress() {
         const result = cleanAnswers(group.ids, source.result);
         if (group.ids.every(id => result[id])) {
           block.result = result;
+          if (source.radio === 0 || source.radio === 1) block.radio = source.radio;
           block.lastIds = group.ids.filter(id => Array.isArray(source.lastIds) && source.lastIds.includes(id));
         }
         if (source.round && Array.isArray(source.round.ids)) {
@@ -128,7 +126,7 @@ function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch { /* De ronde blijft in dit venster beschikbaar. */ }
 }
 function block(group = topic) { return progress.blocks[group.key]; }
-function complete(group) { return Boolean(block(group)?.result && !block(group).round); }
+function complete(group) { return Boolean(block(group)?.result); }
 function points(id, answers) { return answers[id].filter(value => byId.get(id).correct.includes(value)).length; }
 function missed(id) { return points(id, block().result) < byId.get(id).correct.length; }
 function answeredCount(round) { return round.ids.filter(id => round.answers[id]?.length).length; }
@@ -136,30 +134,25 @@ function maxPoints(ids) { return ids.reduce((n,id) => n + byId.get(id).correct.l
 function totalPoints(ids, answers) { return ids.reduce((n,id) => n + points(id, answers), 0); }
 
 function setScreen(view, focusId = 'screen-title') {
-  const views = {home: renderHome, question: renderQuestion, result: renderResult, review: renderReview, overview: renderOverview};
+  const views = {home: renderHome, briefing: renderBriefing, question: renderQuestion, result: renderResult, review: renderReview, overview: renderOverview};
   main.innerHTML = views[view]();
   const target = document.getElementById(focusId) || main;
   target.focus({preventScroll:true});
   if (focusId === 'topics-title') target.scrollIntoView({block:'start'});
   else window.scrollTo(0,0);
 }
-function openTopic(key, series = false) {
+function openTopic(key) {
   topic = topics.get(key);
   progress.last = key;
-  progress.series = series;
   if (!block()) progress.blocks[key] = {};
-  if (complete(topic)) {
-    showResult();
-  } else {
-    if (!block().round) block().round = newRound(topic.ids);
-    save();
-    setScreen('question');
-  }
+  save();
+  if (block().round) setScreen('question');
+  else if (complete(topic)) showResult();
+  else setScreen('briefing');
 }
 function openSeries() {
-  const last = topics.get(progress.last);
-  const next = progress.series && last && !complete(last) ? last : TOPICS.find(group => !complete(group));
-  if (next) openTopic(next.key, true);
+  const next = recommendedOrder();
+  if (next) openTopic(next.key);
   else setScreen('overview');
 }
 function goQuestion(id) {
@@ -183,35 +176,75 @@ function showResult() {
 }
 
 function topicCard(group) {
-  const b = block(group), r = b?.round;
-  const count = r ? answeredCount(r) : b?.result ? group.ids.length : 0;
+  const b = block(group), r = b?.round, order = WORK_ORDERS[group.key];
+  const count = r ? answeredCount(r) : complete(group) ? group.ids.length : 0;
   const max = r?.ids.length || group.ids.length;
-  const label = complete(group) ? 'Bekijk resultaat' : r ? 'Verder oefenen' : 'Start oefenblok';
-  return `<button class="topic topic-link" data-action="open" data-key="${group.key}">
-    <strong>${group.name}</strong>
-    <span class="topic-count">${r && b.result ? 'Herhaling · ' : ''}${count} van ${max} beantwoord</span>
-    <progress max="${max}" value="${count}" aria-label="Voortgang ${group.name}"></progress>
-    <span class="topic-cta">${label} <span aria-hidden="true">→</span></span></button>`;
+  const label = r ? (b.result ? 'Herhaling' : 'In uitvoering') : complete(group) ? 'Afgerond' : 'Open';
+  return `<button class="order-card" data-action="open" data-key="${group.key}">
+    <span class="order-top"><span class="order-code">WO ${orderNumber(group)}</span><span class="order-status ${r ? 'active' : complete(group) ? 'done' : ''}">${label}</span></span>
+    <strong>${order.title}</strong><span class="order-topic">${group.name}</span>
+    <span class="order-bottom"><span>${order.location}</span><span>${count}/${max}</span></span>
+    <progress max="${max}" value="${count}" aria-label="Beantwoorde vragen bij ${group.name}"></progress>
+  </button>`;
 }
 
 function renderHome() {
-  const last = topics.get(progress.last);
-  const finished = TOPICS.filter(complete).length;
-  return `<section class="hero">
-    <div class="hero-copy"><img class="hero-logo" src="./img/logo.webp" width="304" height="82" alt="Deltalinqs Training &amp; Services">
-      <h1>Heftruck en<br class="hero-break"> reachtruck</h1>
-      <p class="hero-intro">Oefen in je eigen tempo. Na elk onderwerp zie je je score en kun je de antwoorden met uitleg bekijken.</p>
-      <div class="actions hero-actions"><button class="btn primary" data-action="topics">Kies een onderwerp ↓</button>
-      ${last && block(last)?.round ? `<button class="btn secondary" data-action="resume">Ga verder met ${last.name.toLowerCase()}</button>` : ''}</div>
-      <p class="hero-meta">Je voortgang wordt in deze browser bewaard.</p>
-    </div><figure class="hero-photo"><img src="./img/hero.webp" width="850" height="478" alt="Bovenaanzicht van een heftruck in een magazijngang"></figure>
-  </section><section class="home-info" aria-labelledby="topics-title">
-    <div class="section-head"><h2 id="topics-title" tabindex="-1">Kies een oefenblok</h2><span class="count-chip">${finished} van ${TOPICS.length} onderwerpen afgerond</span></div>
-    <div class="topic-grid">${TOPICS.map(topicCard).join('')}</div>
-    <div class="actions all-actions"><button class="btn secondary" data-action="series">${finished === TOPICS.length ? 'Resultaten van alle onderwerpen' : 'Alle '+QUESTIONS.length+' vragen per onderwerp oefenen'}</button>
-    ${finished && finished < TOPICS.length ? '<button class="text-button" data-action="overview">Mijn resultaten</button>' : ''}</div>
-  </section>`;
+  const finished = TOPICS.filter(complete).length, next = recommendedOrder();
+  const active = TOPICS.some(group => block(group)?.round) || finished > 0;
+  return `<section class="shift-hero">
+    <img class="shift-photo" src="./img/hero.webp" alt="Bovenaanzicht van een heftruck tussen twee stellingen">
+    <div class="shift-copy"><p class="kicker">Heftruck &amp; reachtruck</p>
+      <h1 id="screen-title" tabindex="-1">Jouw dienst op<br>de terminal</h1>
+      <p>De ploeg wisselt. Er staat een pompkist klaar en de eerste vrachtwagen meldt zich. Oefen de keuzes die jij tijdens zo’n dienst maakt.</p>
+      <div class="actions"><button class="btn shift-start" data-action="series">${next ? (active ? 'Vervolg je dienst' : 'Start je dienst') : 'Bekijk je dienstoverdracht'}</button>
+      <button class="hero-link" data-action="topics">Kies een werkorder</button></div>
+    </div></section>
+    <div class="shift-strip"><div><strong>${finished} van ${TOPICS.length} werkorders afgerond</strong>
+      <div class="segments" aria-hidden="true">${TOPICS.map(group => `<i class="${complete(group) ? 'done' : block(group)?.round ? 'started' : ''}"></i>`).join('')}</div>
+    </div><button class="text-button" data-action="overview">Mijn logboek${progress.savedIds.length ? ' (' + progress.savedIds.length + ')' : ''}</button></div>
+    <section class="home-info" aria-labelledby="topics-title"><div class="section-head">
+      <div><h2 id="topics-title" tabindex="-1">Werkorders van deze dienst</h2><p class="board-intro">${QUESTIONS.length} oefenvragen. Na elke werkorder krijg je uitleg. Je kunt op dit apparaat later verdergaan.</p></div>
+    </div><div class="order-grid">${TOPICS.map(topicCard).join('')}</div></section>`;
 }
+function recommendedOrder() {
+  const last = topics.get(progress.last);
+  if (last && !complete(last)) return last;
+  if (last && block(last)?.round) return last;
+  return TOPICS.find(group => block(group)?.round) || TOPICS.find(group => !complete(group));
+}
+
+function orderNumber(group) {
+  return String(TOPICS.indexOf(group) + 1).padStart(2, '0');
+}
+
+function renderBriefing() {
+  const order = WORK_ORDERS[topic.key];
+  return `<section class="work-area"><button class="text-button back-link" data-action="topics">Werkorderbord</button>
+    <article class="brief-card"><div class="brief-top"><span class="order-code">WO ${orderNumber(topic)}</span><span>${order.location}</span></div>
+    <h1 id="screen-title" tabindex="-1">${order.title}</h1><p class="brief-story">${order.briefing}</p>
+    <div class="brief-start"><div><strong>${topic.name}</strong><span>${topic.ids.length} vragen · Feedback na de werkorder</span></div>
+    <button class="btn primary" data-action="begin-order">Begin met oefenen</button></div></article></section>`;
+}
+
+function renderRadio() {
+  const order = WORK_ORDERS[topic.key], selection = block().radio;
+  return `<section class="radio-card" aria-labelledby="radio-title"><p class="kicker">Ploegoverdracht · ${order.location}</p>
+    <h2 id="radio-title">Je collega aan de portofoon</h2><p>${order.call}</p>
+    <div class="radio-replies">${order.replies.map(([label],i) =>
+      `<button class="radio-reply" data-action="radio" data-index="${i}" aria-pressed="${selection === i}">${label}</button>`).join('')}</div>
+    <p class="radio-response" role="status">${Number.isInteger(selection) ? order.replies[selection][1] : ''}</p></section>`;
+}
+
+function toggleNote(id) {
+  if (progress.savedIds.includes(id)) progress.savedIds = progress.savedIds.filter(saved => saved !== id);
+  else progress.savedIds.push(id);
+  save();
+}
+
+function bookmarkLabel(id) {
+  return progress.savedIds.includes(id) ? 'Bewaard voor de training' : 'Bewaar voor de training';
+}
+
 function artwork(q) {
   if (!q.image) return '';
   return `<figure class="question-art${q.feedbackImage ? ' diagram' : ''}"><img src="./img/${q.image}.webp" alt="${q.alt}"></figure>`;
@@ -220,9 +253,9 @@ function feedbackBody(q, choices) {
   return `<ul class="review-options">${q.options.map((option, i) => {
     const right = q.correct.includes(i);
     const picked = choices.includes(i);
-    const label = right ? (picked ? 'Juist gekozen · +1 punt' : 'Juist antwoord gemist') : picked ? 'Onjuist gekozen' : '';
+    const label = right ? (picked ? 'Juist gekozen' : 'Juist antwoord gemist') : picked ? 'Onjuist gekozen' : '';
     return `<li class="${right ? 'correct' : picked ? 'wrong' : ''}"><span class="option-letter" aria-hidden="true">${String.fromCharCode(65+i)}</span><div>${option}${label ? `<small>${label}</small>` : ''}</div></li>`;
-  }).join('')}</ul><div class="feedback"><h3>Uitleg</h3><p>${q.feedback}</p>
+  }).join('')}</ul><div class="feedback"><h3>Waarom dit antwoord?</h3><p>${q.feedback}</p>
     ${q.feedbackImage ? `<img class="feedback-image" src="./img/${q.feedbackImage}.webp" alt="${q.feedbackAlt}" loading="lazy" width="425" height="464">` : ''}</div>`;
 }
 function choicesForm(q, choices) {
@@ -237,15 +270,15 @@ function choicesForm(q, choices) {
       <button class="text-button" data-action="clear" ${choices.length ? '' : 'hidden'}>Wis keuze</button></div>`;
 }
 function advanceLabel(r) {
-  if (answeredCount(r) === r.ids.length) return 'Afronden en resultaat bekijken';
-  return r.current === r.ids[r.ids.length-1] ? 'Naar open vraag' : 'Volgende vraag →';
+  if (answeredCount(r) === r.ids.length) return 'Rond de werkorder af';
+  return r.current === r.ids[r.ids.length-1] ? 'Naar open vraag' : 'Volgende vraag';
 }
 function renderQuestion() {
   const b = block(), r = b.round, id = r.current, position = r.ids.indexOf(id);
   const q = byId.get(id), choices = r.answers[id] || [], count = answeredCount(r);
   return `<section class="work-area">
-    <button class="text-button back-link" data-action="topics">← Onderwerpen</button>
-    <div class="progress-head"><p class="eyebrow">${b.result ? 'Herhaling · ' : ''}${topic.name}</p><span>Vraag <strong>${position+1}</strong> / ${r.ids.length}</span></div>
+    <button class="text-button back-link" data-action="topics">Werkorderbord</button>
+    <div class="progress-head"><p class="eyebrow">WO ${orderNumber(topic)} · ${b.result ? 'Herhaling · ' : ''}${topic.name}</p><span>Vraag <strong>${position+1}</strong> / ${r.ids.length}</span></div>
     <progress id="round-progress" value="${count}" max="${r.ids.length}" aria-label="Beantwoorde vragen"></progress>
     <details class="question-map"><summary>Vragenoverzicht <span id="round-count">${count}/${r.ids.length} beantwoord</span></summary>
     <div class="map-sections"><div class="map-grid">${r.ids.map((key,i) =>
@@ -253,7 +286,7 @@ function renderQuestion() {
     <article class="question-card"><div class="question-layout${q.image ? ' with-art' : ''}">
       <h1 id="screen-title" tabindex="-1">${q.prompt}</h1>${artwork(q)}
       <div class="question-content">${choicesForm(q, choices)}</div></div>
-      <div class="question-actions"><button class="text-button" data-action="${position ? 'previous' : 'topics'}">${position ? '← Vorige vraag' : 'Terug naar onderwerpen'}</button>
+      <div class="question-actions"><button class="text-button" data-action="${position ? 'previous' : 'topics'}">${position ? 'Vorige vraag' : 'Werkorderbord'}</button>
       <button class="btn primary" data-action="advance" ${choices.length ? '' : 'disabled'}>${advanceLabel(r)}</button></div>
     </article></section>`;
 }
@@ -287,30 +320,29 @@ function repeatButtonText(n) {
   return n ? `Start herhaling (${n} ${n === 1 ? 'vraag' : 'vragen'})` : 'Start herhaling';
 }
 function renderResult() {
-  const b = block(), errors = topic.ids.filter(missed).length, correct = topic.ids.length-errors;
-  const repeatCount = repeatIds().length;
-  const subset = b.lastIds?.length && b.lastIds.length < topic.ids.length;
-  const nextGroup = TOPICS.find(group => !complete(group));
+  const b = block(), errors = topic.ids.filter(missed).length, correct = topic.ids.length - errors;
+  const repeatCount = repeatIds().length, order = WORK_ORDERS[topic.key], next = recommendedOrder();
+  const finished = TOPICS.filter(complete).length;
+  const focusQuestion = byId.get(topic.ids.find(missed) || topic.ids[0]);
   return `<section class="work-area result">
-    <button class="text-button back-link" data-action="topics">← Onderwerpen</button>
-    <div class="result-banner"><div><p class="eyebrow">Onderwerp afgerond</p><h1 id="screen-title" tabindex="-1">${topic.name}</h1>
-      <p>${correct} van de ${topic.ids.length} vragen volledig goed.</p>
-      ${subset ? `<p>Deze herhaling: ${totalPoints(b.lastIds,b.result)} van ${maxPoints(b.lastIds)} punten.</p>` : ''}</div>
-      <div class="score-number"><strong>${totalPoints(topic.ids,b.result)}</strong> / ${maxPoints(topic.ids)}<span>punten voor dit onderwerp</span></div></div>
-    <div class="result-body"><h2>Antwoorden nakijken</h2>
-      <div class="actions result-actions">
-        <button class="btn primary" data-action="review-all">Bekijk alle ${topic.ids.length} vragen</button>
-        <button class="btn secondary" data-action="review-missed" ${errors ? '' : 'disabled'}>Bekijk alleen fout of deels goed (${errors})</button>
-      </div>
-      <fieldset class="repeat-options"><legend>Welke vragen wil je opnieuw oefenen?</legend>
+    <button class="text-button back-link" data-action="topics">Werkorderbord</button>
+    <header class="result-banner"><div><p class="eyebrow">WO ${orderNumber(topic)} afgerond · ${finished} van ${TOPICS.length} werkorders</p>
+      <h1 id="screen-title" tabindex="-1">${order.title}</h1><p>${topic.name}</p></div></header>
+    <section class="result-body"><h2>Wat neem je mee?</h2>
+      <p class="result-intro">${errors ? `${correct} van de ${topic.ids.length} vragen volledig goed. Bekijk de uitleg bij ${errors === 1 ? 'de vraag die je nog kunt aanscherpen' : 'de '+errors+' vragen die je nog kunt aanscherpen'}.` : 'Je hebt alle vragen volledig goed. Bij het terugkijken lees je de uitleg en kun je vragen bewaren voor de praktijktraining.'}</p>
+      <div class="debrief-example"><p class="order-code">Uit jouw werkorder</p><h3>${focusQuestion.prompt}</h3><p>${focusQuestion.feedback}</p></div>
+      <div class="actions result-actions"><button class="btn ${errors ? 'primary' : 'secondary'}" data-action="review-missed" ${errors ? '' : 'disabled'}>Bekijk mijn leerpunten (${errors})</button>
+        <button class="btn ${errors ? 'secondary' : 'primary'}" data-action="review-all">Bekijk alle ${topic.ids.length} antwoorden</button></div>
+      <details class="details-panel"><summary>Resultaat en opnieuw oefenen</summary>
+      <p>${totalPoints(topic.ids,b.result)} van ${maxPoints(topic.ids)} punten.</p>
+      ${b.lastIds?.length && b.lastIds.length < topic.ids.length ? `<p>Laatste herhaling · ${totalPoints(b.lastIds,b.result)} van ${maxPoints(b.lastIds)} punten.</p>` : ''}
+      <fieldset class="repeat-options"><legend>Welke vragen neem je mee?</legend>
         <label><input id="repeat-missed" type="checkbox" ${repeatMissed ? 'checked' : ''} ${errors ? '' : 'disabled'}> Fout of deels goed (${errors})</label>
-        <label><input id="repeat-right" type="checkbox" ${repeatRight ? 'checked' : ''} ${correct ? '' : 'disabled'}> Volledig goed (${correct})</label>
-      </fieldset>
-      <button class="btn secondary" data-action="repeat" ${repeatCount ? '' : 'disabled'}>${repeatButtonText(repeatCount)}</button>
-    </div><div class="actions all-actions">
-      ${progress.series ? `<button class="btn primary" data-action="${nextGroup ? 'series' : 'overview'}">${nextGroup ? 'Volgend onderwerp · '+nextGroup.name+' →' : 'Bekijk totaalresultaat'}</button>` : ''}
-      <button class="text-button" data-action="topics">Naar de onderwerpen</button>
-    </div></section>`;
+        <label><input id="repeat-right" type="checkbox" ${repeatRight ? 'checked' : ''} ${correct ? '' : 'disabled'}> Volledig goed (${correct})</label></fieldset>
+      <button class="btn secondary" data-action="repeat" ${repeatCount ? '' : 'disabled'}>${repeatButtonText(repeatCount)}</button></details>
+    </section>${renderRadio()}
+    <div class="actions all-actions"><button class="btn primary" data-action="${next ? 'series' : 'overview'}">${next ? 'Verder met WO '+orderNumber(next)+' · '+WORK_ORDERS[next.key].title : 'Bekijk je dienstoverdracht'}</button>
+      <button class="text-button" data-action="topics">Werkorderbord</button></div></section>`;
 }
 function renderReview() {
   const id = reviewIds[reviewIndex], q = byId.get(id), answers = block().result;
@@ -318,25 +350,28 @@ function renderReview() {
   const verdict = score === max ? 'Volledig goed' : score ? 'Gedeeltelijk goed' : 'Onjuist';
   const last = reviewIndex === reviewIds.length-1;
   return `<section class="work-area review">
-    <button class="text-button back-link" data-action="result">← Terug naar je resultaat</button>
+    <button class="text-button back-link" data-action="result">Terug naar de nabespreking</button>
     <div class="progress-head"><p class="eyebrow">Nakijken · ${topic.name}</p><span>Vraag ${reviewIndex+1} / ${reviewIds.length}</span></div>
     <article class="question-card"><div class="question-layout${q.image ? ' with-art' : ''}">
       <h1 id="screen-title" tabindex="-1">${q.prompt}</h1>${artwork(q)}
-      <div class="question-content"><h2 class="verdict">${verdict} · ${score}/${max} ${max===1 ? 'punt' : 'punten'}</h2>${feedbackBody(q, answers[id])}</div></div>
-      <div class="question-actions"><button class="text-button" data-action="review-previous" ${reviewIndex ? '' : 'disabled'}>← Vorige vraag</button>
-        <button class="btn primary" data-action="${last ? 'result' : 'review-next'}">${last ? 'Terug naar resultaat' : 'Volgende vraag →'}</button>
+      <div class="question-content"><h2 class="verdict">${verdict}</h2>${feedbackBody(q, answers[id])}
+        <button class="note-btn" aria-pressed="${progress.savedIds.includes(id)}" data-action="bookmark" data-id="${id}">${bookmarkLabel(id)}</button></div></div>
+      <div class="question-actions"><button class="text-button" data-action="review-previous" ${reviewIndex ? '' : 'disabled'}>Vorige vraag</button>
+        <button class="btn primary" data-action="${last ? 'result' : 'review-next'}">${last ? 'Terug naar de nabespreking' : 'Volgende vraag'}</button>
       </div></article></section>`;
 }
 function renderOverview() {
-  const finished = TOPICS.filter(complete);
-  const total = finished.reduce((sum,g) => sum + totalPoints(g.ids,block(g).result),0);
-  const max = finished.reduce((sum,g) => sum + maxPoints(g.ids),0);
-  return `<section class="work-area result"><button class="text-button back-link" data-action="topics">← Onderwerpen</button>
-    <div class="result-banner"><div><p class="eyebrow">Afgeronde onderwerpen</p><h1 id="screen-title" tabindex="-1">Mijn resultaten</h1><p>${finished.length} van ${TOPICS.length} onderwerpen afgerond.</p></div>
-      <div class="score-number"><strong>${total}</strong> / ${max}<span>punten</span></div></div>
-    <div class="result-body"><div class="topic-grid">${finished.map(topicCard).join('')}</div>
-    <div class="actions all-actions">${finished.length < TOPICS.length ? '<button class="btn primary" data-action="series">Verder oefenen →</button>' :
-    '<button class="btn secondary" data-action="restart-series">Alle 57 vragen opnieuw oefenen</button>'}</div></div></section>`;
+  const finished = TOPICS.filter(complete), allDone = finished.length === TOPICS.length;
+  const saved = progress.savedIds.map(id => byId.get(id));
+  return `<section class="work-area result"><button class="text-button back-link" data-action="topics">Werkorderbord</button>
+    <header class="result-banner"><div><p class="eyebrow">Logboek · Intern transport</p><h1 id="screen-title" tabindex="-1">${allDone ? 'Dienst overgedragen' : 'Mijn logboek'}</h1>
+    <p>${allDone ? `Je hebt alle ${QUESTIONS.length} vragen geoefend. Neem je bespreekpunten mee naar de praktijktraining.` : `${finished.length} van de ${TOPICS.length} werkorders afgerond.`}</p></div></header>
+    <section class="result-body"><h2>Bespreken tijdens de training</h2>
+    ${saved.length ? `<ul class="log-list">${saved.map(q => `<li><details><summary>${q.prompt}</summary><p>${q.feedback}</p>
+      <button class="text-button" data-action="remove-note" data-id="${q.id}">Verwijder dit bespreekpunt</button></details></li>`).join('')}</ul>` :
+      '<p class="result-intro">Wil je iets aan de trainer vragen? Kies bij de uitleg van een vraag voor ‘Bewaar voor de training’. Je vindt die vragen hier terug.</p>'}
+    </section>${finished.length ? `<section class="home-info"><div class="section-head"><h2>Afgeronde werkorders</h2></div><div class="order-grid">${finished.map(topicCard).join('')}</div></section>` : ''}
+    <div class="actions all-actions">${allDone ? `<button class="btn secondary" data-action="restart-series">Nieuwe oefendienst starten</button>` : '<button class="btn primary" data-action="series">Verder met de dienst</button>'}</div></section>`;
 }
 
 function nextQuestion() {
@@ -360,8 +395,8 @@ function startRepeat() {
 }
 dialog.addEventListener('close', () => {
   if (dialog.returnValue !== 'ok') return;
-  TOPICS.forEach(group => { block(group).round = newRound(group.ids); });
-  openTopic(TOPICS[0].key, true);
+  progress.blocks = {};
+  openTopic(TOPICS[0].key);
 });
 main.addEventListener('change', event => {
   if (event.target.matches('input[name="answer"]')) updateSelection();
@@ -380,7 +415,30 @@ document.addEventListener('click', event => {
     case 'home': setScreen('home'); break;
     case 'topics': setScreen('home', 'topics-title'); break;
     case 'open': openTopic(button.dataset.key); break;
-    case 'resume': openTopic(progress.last, progress.series); break;
+    case 'begin-order':
+      block().round = newRound(topic.ids);
+      save();
+      setScreen('question');
+      break;
+    case 'radio': {
+      const choice = Number(button.dataset.index);
+      block().radio = choice;
+      save();
+      main.querySelectorAll('.radio-reply').forEach(reply => reply.setAttribute('aria-pressed', String(reply === button)));
+      main.querySelector('.radio-response').textContent = WORK_ORDERS[topic.key].replies[choice][1];
+      break;
+    }
+    case 'bookmark': {
+      const id = button.dataset.id;
+      toggleNote(id);
+      button.setAttribute('aria-pressed', String(progress.savedIds.includes(id)));
+      button.textContent = bookmarkLabel(id);
+      break;
+    }
+    case 'remove-note':
+      toggleNote(button.dataset.id);
+      setScreen('overview');
+      break;
     case 'series': openSeries(); break;
     case 'jump': goQuestion(button.dataset.id); break;
     case 'previous': {
