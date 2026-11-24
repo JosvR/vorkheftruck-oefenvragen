@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.04.00';
+const VERSION = 'V01.04.01';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
@@ -191,19 +191,34 @@ function topicCard(group) {
 function renderHome() {
   const finished = TOPICS.filter(complete).length, next = recommendedOrder();
   const active = TOPICS.some(group => block(group)?.round) || finished > 0;
+  let startLabel = 'Bekijk je dienstoverdracht';
+  if (next) {
+    const number = TOPICS.indexOf(next) + 1;
+    startLabel = active ? `Ga verder met werkorder ${number}` : `Start met werkorder ${number}`;
+  }
   return `<section class="shift-hero">
     <img class="shift-photo" src="./img/hero.webp" alt="Bovenaanzicht van een heftruck tussen twee stellingen">
     <div class="shift-copy"><p class="kicker">Heftruck &amp; reachtruck</p>
       <h1 id="screen-title" tabindex="-1">Jouw dienst op<br>de terminal</h1>
-      <p>De ploeg wisselt. Er staat een pompkist klaar en de eerste vrachtwagen meldt zich. Oefen de keuzes die jij tijdens zo’n dienst maakt.</p>
-      <div class="actions"><button class="btn shift-start" data-action="series">${next ? (active ? 'Vervolg je dienst' : 'Start je dienst') : 'Bekijk je dienstoverdracht'}</button>
+      <p>${finished === TOPICS.length
+        ? `Je hebt alle ${TOPICS.length} werkorders afgerond. Open je logboek en neem je bewaarde vragen mee naar de praktijktraining.`
+        : `Rond vóór de praktijktraining alle ${TOPICS.length} werkorders af. Elke werkorder begint met een situatie op de werkvloer. In totaal beantwoord je ${QUESTIONS.length} oefenvragen. Je mag fouten maken en opnieuw oefenen.`}</p>
+      <div class="actions"><button class="btn shift-start" data-action="series">${startLabel}</button>
       <button class="hero-link" data-action="topics">Kies een werkorder</button></div>
     </div></section>
     <div class="shift-strip"><div><strong>${finished} van ${TOPICS.length} werkorders afgerond</strong>
       <div class="segments" aria-hidden="true">${TOPICS.map(group => `<i class="${complete(group) ? 'done' : block(group)?.round ? 'started' : ''}"></i>`).join('')}</div>
     </div><button class="text-button" data-action="overview">Mijn logboek${progress.savedIds.length ? ' (' + progress.savedIds.length + ')' : ''}</button></div>
+    ${finished < TOPICS.length ? `<section class="work-instructions" aria-labelledby="instructions-title">
+      <h2 id="instructions-title">Zo pak je een werkorder aan</h2>
+      <ol>
+        <li><strong>Lees de werksituatie.</strong> Kies daarna <b>Begin met oefenen</b> en beantwoord de vragen.</li>
+        <li><strong>Bekijk je feedback.</strong> Kies na de laatste vraag <b>Rond de werkorder af</b>. Lees de uitleg en oefen lastige vragen nog eens.</li>
+        <li><strong>Neem je vragen mee.</strong> Iets bespreken met je trainer? Kies bij de uitleg <b>Bewaar voor de training</b>. De vraag staat dan in <b>Mijn logboek</b>. Ga daarna verder met de volgende werkorder.</li>
+      </ol>
+    </section>` : ''}
     <section class="home-info" aria-labelledby="topics-title"><div class="section-head">
-      <div><h2 id="topics-title" tabindex="-1">Werkorders van deze dienst</h2><p class="board-intro">${QUESTIONS.length} oefenvragen. Na elke werkorder krijg je uitleg. Je kunt op dit apparaat later verdergaan.</p></div>
+      <div><h2 id="topics-title" tabindex="-1">Werkorders van deze dienst</h2><p class="board-intro">Kies hieronder zelf een onderwerp. Wil je later verder oefenen? Open de app dan op hetzelfde apparaat en in dezelfde browser.</p></div>
     </div><div class="order-grid">${TOPICS.map(topicCard).join('')}</div></section>`;
 }
 function recommendedOrder() {

@@ -1,6 +1,6 @@
 # Vorkheftruck oefenvragen · Jouw dienst op de terminal
 
-Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.04.00**.
+Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.04.01**.
 
 ## Zo oefent een deelnemer
 

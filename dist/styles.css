@@ -398,6 +398,19 @@ dialog .actions { justify-content: end; }
 .segments i { width: 12.5%; height: 6px; border-radius: 2px; background: #dce1ea; }
 .segments .started { background: #b37b24; }
 .segments .done { background: #087c78; }
+.work-instructions { margin: 26px 0; }
+.work-instructions h2 { font-size: clamp(1.4rem, 2.6vw, 1.8rem); margin-bottom: 12px; }
+.work-instructions ol {
+  margin: 0; padding: 18px 22px 18px 42px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 38px;
+  background: white; border: 1px solid var(--line); border-radius: 10px;
+}
+.work-instructions li { line-height: 1.5; padding-left: 2px; }
+.work-instructions li::marker { color: #276173; font-weight: 750; }
+.work-instructions strong { display: block; color: var(--ink); margin-bottom: 3px; }
+@media (max-width: 760px) {
+  .work-instructions ol { grid-template-columns: minmax(0, 1fr); gap: 13px; }
+}
 .board-intro, .result-intro { margin-top: 7px; color: var(--muted); }
 .order-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .order-card {
