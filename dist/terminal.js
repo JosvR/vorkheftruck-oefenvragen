@@ -93,7 +93,7 @@ function liftMeter(compact = false) {
       <defs><pattern id="grid-lift" width="17" height="17" patternUnits="userSpaceOnUse"><path d="M17 0H0V17" fill="none" stroke="#1f4351" stroke-width=".8"/></pattern></defs>
       <rect width="330" height="174" rx="6" fill="url(#grid-lift)"/>
       <g fill="none" stroke="#557888"><path d="M13 154H282M283 143V43"/><path d="M277 143h11m-11-33h11m-11-34h11m-11-33h11"/></g>
-      <g fill="#bfd3d7" font-family="monospace" font-size="12"><text x="292" y="147">0</text><text x="292" y="114">19</text><text x="292" y="80">38</text><text x="292" y="47">57</text></g>
+      <g fill="#bfd3d7" font-family="monospace" font-size="12"><text x="292" y="147">0</text><text x="292" y="114">${Math.round(max / 3)}</text><text x="292" y="80">${Math.round(max * 2 / 3)}</text><text x="292" y="47">${max}</text></g>
       <ellipse cx="153" cy="155" rx="119" ry="3" fill="#091920"/>
       <path d="M76 120V68l7-3h62l12 51" stroke="#c4d2d3" stroke-width="5" fill="none"/>
       <path d="M76 67l7-6h65l4 7z" fill="#e1ae4e"/><path d="M89 71h47l7 27H91z" fill="#406275" opacity=".55"/>

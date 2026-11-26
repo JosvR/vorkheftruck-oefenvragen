@@ -67,7 +67,7 @@ const WORK_ORDERS = {
   },
   stapelen: {
     location: 'Laadplaats', title: 'Rond de levering af',
-    briefing: 'De vrachtwagen staat aan de laadplaats. Een deel van de pallets gaat mee, de rest wordt opgeslagen. Wat spreek je af met de chauffeur en wat controleer je bij het stapelen?',
+    briefing: 'De vrachtwagen staat aan de laadplaats. Een deel van de pallets gaat mee, de rest gaat in de stelling. Wat spreek je af met de chauffeur? Welke hoogtes controleer je bij het doorrijden, heffen en afzetten?',
     call: '“De chauffeur wacht op ons. Wat spreken we af voordat de eerste pallet wordt geladen?”',
     replies: [
       ['“In welke volgorde de pallets meegaan.”', 'De laadvolgorde is nuttig. Spreek ook af waar de chauffeur veilig wacht en hoe je voorkomt dat de vrachtwagen tijdens het laden beweegt.'],

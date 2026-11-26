@@ -1,10 +1,10 @@
 # Vorkheftruck oefenvragen · Jouw dienst op de terminal
 
-Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.05.00**.
+Nederlandstalige oefenapp van DTS voor de voorbereiding op de heftruck- en reachtrucktraining. Versie **V01.06.00**.
 
 ## Zo oefent een deelnemer
 
-De dienst bestaat uit acht werkorders met samen 57 vragen. Elke werkorder begint met een situatie uit de haven of de procesindustrie. Deelnemers volgen de voorgestelde route of kiezen zelf een onderwerp. Het werkorderbord laat zien wat openstaat en waar ze gebleven zijn.
+De dienst bestaat uit acht werkorders met samen 62 vragen. Elke werkorder begint met een situatie uit de haven of de procesindustrie. Deelnemers volgen de voorgestelde route of kiezen zelf een onderwerp. Het werkorderbord laat zien wat openstaat en waar ze gebleven zijn.
 
 Na elke werkorder kunnen deelnemers alle antwoorden bekijken of alleen de vragen waarop ze nog iets kunnen leren. Bij elke vraag zien ze hun keuzes, de juiste antwoorden en de uitleg. De portofoonvraag aan het eind laat ze twee reacties voor een collega uitproberen. Elke reactie krijgt eigen feedback. Een werkorder telt als afgerond zodra de deelnemer de reeks heeft afgemaakt, ongeacht de score of portofoonkeuze.
 
@@ -14,7 +14,7 @@ De voortgang blijft lokaal op hetzelfde webadres, in dezelfde browser. De app ka
 
 ## Beeld, spelpunten en geluid
 
-De hefmeter telt unieke vragen met een antwoord, maximaal 57 per dienst. Ook een fout of gedeeltelijk antwoord levert één hefpunt op. Wissen van een antwoord in de eerste ronde draait dat punt terug. Herhalen levert geen extra hefpunten op. De antwoordpunten voor de inhoudelijke feedback blijven apart. De meter wordt afgeleid van de bestaande antwoorden, ook voor deelnemers die eerder begonnen.
+De hefmeter telt unieke vragen met een antwoord, maximaal 62 per dienst. Ook een fout of gedeeltelijk antwoord levert één hefpunt op. Wissen van een antwoord in de eerste ronde draait dat punt terug. Herhalen levert geen extra hefpunten op. De antwoordpunten voor de inhoudelijke feedback blijven apart. De meter wordt afgeleid van de bestaande antwoorden, ook voor deelnemers die eerder begonnen.
 
 Elke werkorder heeft een nieuw illustratief werkplekbeeld en een kijkvraag voor de nabespreking. Bij vier werkorders wijst de deelnemer de plek in het beeld aan en krijgt een aanwijzing of uitleg. De havenfoto en de acht werkplekbeelden zijn voor deze app gegenereerd. De oorspronkelijke lesafbeeldingen blijven bij de vragen. Bij werkorders 3 en 6 kan de deelnemer een korte GIF over uitzwaai of lastzwaartepuntafstand zelf starten. De stilstaande weergave bevat dezelfde kerninformatie. De heftruck op de meter verbeeldt de spelvoortgang.
 
@@ -45,6 +45,7 @@ De app bestaat uit statische bestanden. Er zijn geen accounts, database, serverf
 
 ## Oefenvragen
 
+- **H01–H05** behandelen de vijf vorkheftruckhoogtes in werkorder 08, *Laden, lossen en stapelen*. De tekeningen komen uit de DTS-cursusinfographic *Vijf hoogtes van de vorkheftruck*.
 - **A01–A05**: nieuwe Arbowetvragen, gebaseerd op *Presentatie Heftruck PP DTS* (29 oktober 2026, dia’s 4–7 en 12–13) en *Heftruck Complete Cursus* (augustus 2026, hoofdstuk Wet- en regelgeving).
 - **K, V en R**: vragen gebaseerd op de drie delen van de vragenbank in §5.3 van *ABA BOST CB Reach V6.0624*, p. 34–44. K staat voor kennis toepassen, V voor veiligheid en R voor bediening. Bij de herziening vervielen K14, R08 en R17. R22 is toegevoegd op basis van de DTS-lespresentatie (dia’s 32 en 59).
 - De vraagstammen zijn in het Nederlands geformuleerd en vergeleken met examenversies 3.1 en 3.2. Britse regelgeving is naar Nederlandse regelgeving of een expliciete bedrijfsafspraak vertaald. Lokale voorschriften en truckspecificaties zijn in de vraag opgenomen waar ze het antwoord bepalen.

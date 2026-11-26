@@ -1,9 +1,10 @@
 'use strict';
 
-const VERSION = 'V01.05.00';
+const VERSION = 'V01.06.00';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
+const LEGACY_QUESTION_COUNT = 57;
 const byId = new Map(QUESTIONS.map(q => [q.id, q]));
 const TOPICS = [
   {key: 'arbo', name: 'Arbowet en afspraken', ids: ['A01','A02','A03','A04','A05','V09','V10','V15']},
@@ -13,7 +14,7 @@ const TOPICS = [
   {key: 'stabiliteit', name: 'Stabiliteit en kantelen', ids: ['K02','K03','V05','K08','R09']},
   {key: 'capaciteit', name: 'Lastgewicht en lastdiagram', ids: ['V07','K09','V08','V02','V06','V11','R10','R18']},
   {key: 'opnemen', name: 'Last opnemen en vervoeren', ids: ['K10','K15','V17','R16','V16','V12','R04','R21']},
-  {key: 'stapelen', name: 'Laden, lossen en stapelen', ids: ['K01','R05','K11','R01','R13','K16','R19']}
+  {key: 'stapelen', name: 'Laden, lossen en stapelen', ids: ['K01','R05','K11','R01','R13','K16','R19','H01','H02','H03','H04','H05']}
 ];
 const topics = new Map(TOPICS.map(topic => [topic.key, topic]));
 const main = document.getElementById('main');
@@ -90,14 +91,20 @@ function loadProgress() {
         if (!source) continue;
         const block = {};
         const result = cleanAnswers(group.ids, source.result);
+        const hasRound = source.round && Array.isArray(source.round.ids);
+        if (source.radio === 0 || source.radio === 1) block.radio = source.radio;
         if (group.ids.every(id => result[id])) {
           block.result = result;
-          if (source.radio === 0 || source.radio === 1) block.radio = source.radio;
           block.lastIds = group.ids.filter(id => Array.isArray(source.lastIds) && source.lastIds.includes(id));
-        }
-        if (source.round && Array.isArray(source.round.ids)) {
-          const ids = block.result ? group.ids.filter(id => source.round.ids.includes(id)) : group.ids;
-          if (ids.length) block.round = newRound(ids, cleanAnswers(ids, source.round.answers), source.round.current);
+          if (hasRound) {
+            const ids = group.ids.filter(id => source.round.ids.includes(id));
+            if (ids.length) block.round = newRound(ids, cleanAnswers(ids, source.round.answers), source.round.current);
+          }
+        } else if (hasRound || Object.keys(result).length) {
+          // Een eerder afgeronde werkorder kan nieuwe vragen bevatten.
+          const answers = cleanAnswers(group.ids, source.round?.answers);
+          const current = Object.keys(result).length ? null : source.round?.current;
+          block.round = newRound(group.ids, {...result, ...answers}, current);
         }
         clean.blocks[group.key] = block;
       }
@@ -106,9 +113,9 @@ function loadProgress() {
     const previous = JSON.parse(localStorage.getItem(PREVIOUS_KEY));
     if (previous?.items) return migrateProgress(previous);
     const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY));
-    if (Array.isArray(legacy?.answers) && legacy.answers.length === QUESTIONS.length) {
+    if (Array.isArray(legacy?.answers) && legacy.answers.length === LEGACY_QUESTION_COUNT) {
       const items = {};
-      QUESTIONS.forEach((q,i) => {
+      QUESTIONS.slice(0, LEGACY_QUESTION_COUNT).forEach((q,i) => {
         if (legacy.answers[i]?.length) items[q.id] = legacy.finished ? {answer: legacy.answers[i]} : {draft: legacy.answers[i]};
       });
       return migrateProgress({items, last: 'alles', rounds: {alles: {current: QUESTIONS[legacy.current]?.id}}});
@@ -264,7 +271,7 @@ function bookmarkLabel(id) {
 
 function artwork(q) {
   if (!q.image) return '';
-  return `<figure class="question-art${q.feedbackImage ? ' diagram' : ''}"><img src="./img/${q.image}.webp" alt="${q.alt}"></figure>`;
+  return `<figure class="question-art${q.diagram || q.feedbackImage ? ' diagram' : ''}"><img src="./img/${q.image}.webp" alt="${q.alt}"></figure>`;
 }
 function feedbackBody(q, choices) {
   return `<ul class="review-options">${q.options.map((option, i) => {
