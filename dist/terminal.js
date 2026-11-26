@@ -67,7 +67,7 @@ const CLIPS = {
     "caption": "Volg de blauwe stip op de achterhoek. Terwijl de vorken naar links draaien, zwaait de achterkant eerst naar rechts.",
     "alt": "Bovenaanzicht van een links insturende heftruck met de baan van de rechterachterhoek."
   },
-  "capaciteit": {
+  "last": {
     "file": "vorkhiel",
     "title": "Van vorkhiel tot zwaartepunt",
     "caption": "Volg de gele maatlijn. Je meet horizontaal van de binnenkant van de vorkhiel tot recht onder het zwaartepunt van de last.",
@@ -182,7 +182,10 @@ async function playCue(kind) {
 }
 
 function scenePhoto(key, className = '') {
-  return `<img class="${className}" src="./img/terminal/${key}.webp" alt="${SCENES[key].alt}" loading="lazy" decoding="async">`;
+  const order = WORK_ORDERS[key];
+  const file = order.photo || `terminal/${key}`;
+  const alt = order.alt || SCENES[key].alt;
+  return `<img class="${order.photo ? ' lesson-photo ' : ''}${className}" src="./img/${file}.webp" alt="${alt}" loading="lazy" decoding="async">`;
 }
 
 const PHOTO_SPOTS = {
@@ -256,6 +259,7 @@ const PHOTO_SPOTS = {
 
 function photoDebrief() {
   const scene = SCENES[topic.key], spot = PHOTO_SPOTS[topic.key];
+  if (!scene) return '';
   const photo = `${scenePhoto(topic.key)}<span class="eye-spot" style="--x:${scene.x}%;--y:${scene.y}%" aria-hidden="true"></span>`;
   return `<section class="eye-card"><div class="eye-copy"><p class="kicker">${spot ? 'Zoek op de foto' : 'Kijkvraag'} · ${WORK_ORDERS[topic.key].location}</p><h2>${spot?.ask || scene.ask}</h2>
     <p class="eye-instruction">${spot ? 'Tik op de plek in de foto of bekijk de toelichting.' : 'Bekijk de foto. Wat zou jij aan je collega doorgeven?'}</p>

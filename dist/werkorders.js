@@ -1,8 +1,59 @@
 'use strict';
 
-// Elke werkorder gebruikt één bestaand onderwerp en sluit af met een korte overdracht.
+// Indeling van het werkorderbord en de bijbehorende praktijksituaties.
 const WORK_ORDERS = {
+  afspraken: {
+    location: 'Werkvoorbereiding', title: 'Controleer de werkafspraken', stamp: 'Werkafspraken gecheckt',
+    briefing: 'Je krijgt een nieuwe rijroute, een stagiair in de ploeg en een last met een gevarenetiket. Ga na wat je voor vertrek moet regelen.',
+    photo: 'cursus/ghs', alt: 'Rood gevarenpictogram met een vlam'
+  },
+  transport: {
+    location: 'Materieeldepot', title: 'Kies de juiste truck', stamp: 'Materieel gekozen',
+    briefing: 'Er staan een pallettruck, stapelaar en verschillende heftrucks klaar. Kies per opdracht wat past bij de route, de last en de werkruimte.',
+    photo: 'cursus/knikheftruck', alt: 'Oranje knikheftruck in zijaanzicht'
+  },
+  voorzet: {
+    location: 'Expeditie', title: 'Wissel van hulpstuk', stamp: 'Hulpstuk afgestemd',
+    briefing: 'De tweede levering bestaat uit papierbalen en rollen. Bepaal welk hulpstuk bij de last past en wat de wijziging voor de truck betekent.',
+    photo: 'cursus/vorkenversteller', alt: 'Rood voorzetstuk met twee verstelbare vorken'
+  },
+  techniek: {
+    location: 'Werkplaats', title: 'Loop de heftruck na', stamp: 'Techniek verkend',
+    briefing: 'De monteur loopt met je om de heftruck. Bekijk welke onderdelen dragen, heffen, neigen en de bestuurder beschermen.',
+    photo: 'cursus/contragewicht', alt: 'Rode heftruck met contragewicht'
+  },
+  energie: {
+    location: 'Laadruimte', title: 'Kies en laad veilig', stamp: 'Laadplaats beoordeeld',
+    briefing: 'Je kiest een truck voor een hal en meldt een defect aan de afzuiging van de acculaadplaats. Bepaal wat er nodig is om veilig door te werken.',
+    photo: 'cursus/accu-laadplaats', alt: 'Acculaadplaats met waarschuwingsborden'
+  },
+  hellingen: {
+    location: 'Helling naar de loods', title: 'Neem de helling', stamp: 'Helling beoordeeld',
+    briefing: 'Je moet met een beladen truck van het lage terrein naar de hogere loods. Kies je rijrichting en bepaal waar je van richting kunt veranderen.',
+    photo: 'ramp', alt: 'Een helling op de transportroute'
+  },
+  hoogtes: {
+    location: 'Oplegger en stelling', title: 'Meet vóór je heft', stamp: 'Hoogtes gecontroleerd',
+    briefing: 'Een pallet staat in een oplegger met een laag plafond. Daarna gaat hij naar een stelling. Bepaal welke hoogtes van de heftruck je nodig hebt.',
+    photo: 'hoogtes/vrije-hefhoogte', alt: 'Schets van een heftruck onder een laag plafond'
+  },
+  last: {
+    location: 'Goederenontvangst', title: 'Breng de last in kaart', stamp: 'Last beoordeeld',
+    briefing: 'Een lange kist kan van twee kanten worden opgenomen. Verzamel de gegevens die je nodig hebt om het lastdiagram te gebruiken.',
+    photo: 'terminal/capaciteit', alt: 'Lange houten transportkist op de vloer'
+  },
+  pallets: {
+    location: 'Buffer aan de kade', title: 'Neem de drager veilig op', stamp: 'Drager gecontroleerd',
+    briefing: 'Er staan europallets, een Big Bag en een deels gevulde IBC klaar. Controleer per drager waar de vorken horen en hoe je de last behandelt.',
+    photo: 'cursus/europallet', alt: 'Houten europallet met openingen voor de vorken'
+  },
+  stellingen: {
+    location: 'Magazijn', title: 'Kies een plek in de stelling', stamp: 'Opslagplek beoordeeld',
+    briefing: 'Een partij profielen en nieuwe pallets moeten in het magazijn worden geplaatst. Kies de juiste stelling en controleer de draagkracht en de staat ervan.',
+    photo: 'cursus/draagarmstelling', alt: 'Blauwe draagarmstelling voor lange lasten'
+  },
   arbo: {
+    stamp: 'Ploegoverdracht afgerond',
     location: 'Ploegkamer', title: 'Neem de dienst over',
     briefing: 'Bij de ploegwissel sluit een nieuwe monteur aan. Hij heeft elders veel gereden, maar kent deze terminal nog niet. De eerste pallet staat al klaar. Wat moet er geregeld zijn voordat hij zelfstandig rijdt?',
     call: '“Ik heb bij mijn vorige werkgever ook gereden. Waar haal ik hier de sleutel?” Wat wil je eerst met je collega bespreken?',
@@ -12,6 +63,7 @@ const WORK_ORDERS = {
     ]
   },
   controle: {
+    stamp: 'Truck gecontroleerd',
     location: 'Truckstalling', title: 'Haal de truck op',
     briefing: 'De nachtdienst heeft de truck in het vak gezet. Straks breng je onderdelen naar de werkplaats. Hoe neem je de truck over en wat doe je als hij onderweg anders reageert dan je verwacht?',
     call: '“Truck 4 remde net veel minder goed.” Welke melding helpt je collega het meest?',
@@ -21,6 +73,7 @@ const WORK_ORDERS = {
     ]
   },
   verkeer: {
+    stamp: 'Verkeerssituatie beoordeeld',
     location: 'Kruising bij de loods', title: 'Kies je lijn',
     briefing: 'Je rijdt met een kist vanaf de verpakkingslijn naar de loods. Naast de deur ligt een looproute. Aan het einde van de gang moet je linksaf. Waar kijk je voordat je de bocht inzet?',
     call: '“Waar moet ik op letten bij die blinde hoek naast de loods?” Wat geef je door?',
@@ -30,6 +83,7 @@ const WORK_ORDERS = {
     ]
   },
   ondergrond: {
+    stamp: 'Rijroute verkend',
     location: 'Buitenterrein', title: 'Verken de rijroute',
     briefing: 'Na een bui ligt de route tussen de loodsen er anders bij. Er is een goot, een kort hellend stuk en verderop ligt verpakkingshout. Hoe bepaal je of en hoe je hier kunt rijden?',
     call: '“Hoe ligt de route naar loods B erbij?” Wat heeft de volgende ploeg aan jouw waarneming?',
@@ -39,6 +93,7 @@ const WORK_ORDERS = {
     ]
   },
   stabiliteit: {
+    stamp: 'Balans beoordeeld',
     location: 'Onderdelenloods', title: 'Houd de last in balans',
     briefing: 'Een pomp op een pallet moet van de loods naar de werkplaats. Je ziet ruimte tussen de last en de vorkhiel. Welke invloed hebben de positie van de last en de beweging van de truck?',
     call: '“Deze pomp weegt evenveel als de vorige. Wat is er dan anders?” Wat laat je zien?',
@@ -48,6 +103,7 @@ const WORK_ORDERS = {
     ]
   },
   capaciteit: {
+    stamp: 'Lastdiagram gelezen',
     location: 'Goederenontvangst', title: 'Beoordeel de pompkist',
     briefing: 'Een reservepomp komt binnen in een lange houten kist. De werkplaats wil de kist op hoogte wegzetten. Welke gegevens heb je nodig om het lastdiagram van deze truck te gebruiken?',
     call: '“Het gewicht van de kist is bekend. Kun je hem op die hoogte wegzetten?” Wat zoek je nog op?',
@@ -57,6 +113,7 @@ const WORK_ORDERS = {
     ]
   },
   opnemen: {
+    stamp: 'Vorken afgesteld',
     location: 'Werkplaats', title: 'Pak het transportrek op',
     briefing: 'De monteurs hebben een transportrek klaargezet. De vorkopnames zijn gemarkeerd. Er staat ook een pallet met een zware machine aan één kant. Wat vraagt elke last van jou vóór vertrek?',
     call: '“De machine staat uit het midden op de pallet. Waar kijk jij naar bij het opnemen?”',
@@ -66,8 +123,9 @@ const WORK_ORDERS = {
     ]
   },
   stapelen: {
+    stamp: 'Laadplaats beoordeeld',
     location: 'Laadplaats', title: 'Rond de levering af',
-    briefing: 'De vrachtwagen staat aan de laadplaats. Een deel van de pallets gaat mee, de rest gaat in de stelling. Wat spreek je af met de chauffeur? Welke hoogtes controleer je bij het doorrijden, heffen en afzetten?',
+    briefing: 'De vrachtwagen staat aan de laadplaats. Een deel van de pallets gaat mee, de rest gaat in de stelling. Wat spreek je af met de chauffeur? Welke overgangen controleer je vóór vertrek en waar parkeer je na het lossen?',
     call: '“De chauffeur wacht op ons. Wat spreken we af voordat de eerste pallet wordt geladen?”',
     replies: [
       ['“In welke volgorde de pallets meegaan.”', 'De laadvolgorde is nuttig. Spreek ook af waar de chauffeur veilig wacht en hoe je voorkomt dat de vrachtwagen tijdens het laden beweegt.'],

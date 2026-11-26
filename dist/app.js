@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.06.01';
+const VERSION = 'V01.07.00';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
@@ -9,14 +9,29 @@ const HEIGHT_QUESTIONS_REVISION = 1;
 const REVISED_HEIGHT_QUESTIONS = new Set(['H02', 'H03']);
 const byId = new Map(QUESTIONS.map(q => [q.id, q]));
 const TOPICS = [
-  {key: 'arbo', name: 'Arbowet en afspraken', ids: ['A01','A02','A03','A04','A05','V09','V10','V15']},
-  {key: 'controle', name: 'Controleren, starten en parkeren', ids: ['V01','V04','R20','R15','K04','R03']},
-  {key: 'verkeer', name: 'Verkeer, zicht en bochten', ids: ['V03','V14','R02','K13','V13','R14','R22']},
-  {key: 'ondergrond', name: 'Ondergrond en hellingen', ids: ['K05','K06','K07','R06','R11','K12','R07','R12']},
-  {key: 'stabiliteit', name: 'Stabiliteit en kantelen', ids: ['K02','K03','V05','K08','R09']},
-  {key: 'capaciteit', name: 'Lastgewicht en lastdiagram', ids: ['V07','K09','V08','V02','V06','V11','R10','R18']},
-  {key: 'opnemen', name: 'Last opnemen en vervoeren', ids: ['K10','K15','V17','R16','V16','V12','R04','R21']},
-  {key: 'stapelen', name: 'Laden, lossen en stapelen', ids: ['K01','R05','K11','R01','R13','K16','R19','H01','H02','H03','H04','H05']}
+  {key: 'arbo', name: 'Arbowet en verantwoordelijkheden', ids: ['A01','A02','A03','A04','A05','V09','V10']},
+  {key: 'afspraken', name: 'Werkafspraken en gevarenetiketten', ids: ['V15','N01','N02','N03','N04']},
+  {key: 'transport', name: 'Transportmiddelen kiezen', ids: ['N05','N06','N07','N08','N09','N10']},
+  {key: 'voorzet', name: 'Voorzetapparatuur', ids: ['N11','N12','N13','N14','N15','K15','R18']},
+  {key: 'techniek', name: 'Heftruck Techniek', ids: ['N16','N17','N18','N19','N20','N21','N22']},
+  {key: 'energie', name: 'Aandrijving, accu en Ex-zones', ids: ['N23','N24','N25','N26','N27']},
+  {key: 'controle', name: 'Aanvangscontrole en storingen', ids: ['V01','N29','N28','V04','R20','R15']},
+  {key: 'verkeer', name: 'Verkeer, zicht en bochten', ids: ['V03','V14','R02','K13','V13','N30','R22']},
+  {key: 'ondergrond', name: 'Ondergrond en transportroute', ids: ['K05','K06','K07','R06','R11','R14','N31']},
+  {key: 'hellingen', name: 'Rijden op hellingen', ids: ['K12','R07','R12','N32','N33']},
+  {key: 'hoogtes', name: 'De vijf hoogtes van de heftruck', ids: ['H01','H02','R19','H03','H04','H05']},
+  {key: 'last', name: 'Lastgewicht en zwaartepunt', ids: ['V07','K09','V08','V02','R10','N34']},
+  {key: 'capaciteit', name: 'Lastdiagram en typeplaat', ids: ['N37','V06','V11','N35','N36','N38']},
+  {key: 'stabiliteit', name: 'Stabiliteit en kantelen', ids: ['K02','K03','V05','K08','R09','N39','N40']},
+  {key: 'opnemen', name: 'Last opnemen en vervoeren', ids: ['K10','V17','R16','V16','V12','R04','R21']},
+  {key: 'pallets', name: 'Pallets en andere lastdragers', ids: ['N41','N42','N43','N44','N45','N52','K16']},
+  {key: 'stellingen', name: 'Magazijnstellingen', ids: ['N46','N47','N48','N49','K11','R01','R13']},
+  {key: 'stapelen', name: 'Laden, lossen en parkeren', ids: ['K01','R05','N50','N51','K04','R03']}
+];
+const ROUTE_STAGES = [
+  {name: 'Voor je vertrekt', groups: TOPICS.slice(0, 7)},
+  {name: 'Rijden en heffen', groups: TOPICS.slice(7, 14)},
+  {name: 'Laden, opslaan en afronden', groups: TOPICS.slice(14)}
 ];
 const topics = new Map(TOPICS.map(topic => [topic.key, topic]));
 const main = document.getElementById('main');
@@ -86,32 +101,37 @@ function loadProgress() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved?.blocks) {
       const clean = emptyProgress();
-      clean.last = topics.has(saved.last) ? saved.last : null;
+      const sources = Object.values(saved.blocks).filter(Boolean);
+      // Vraag-ID's blijven geldig als een vraag naar een andere werkorder verhuist.
+      const results = Object.assign({}, ...sources.map(source => source.result));
+      const drafts = Object.assign({}, ...sources.map(source => source.round?.answers));
+      const roundIds = new Set(sources.flatMap(source => Array.isArray(source.round?.ids) ? source.round.ids : []));
+      const lastQuestion = saved.blocks[saved.last]?.round?.current;
+      const lastGroup = TOPICS.find(group => group.ids.includes(lastQuestion));
+      clean.last = lastGroup?.key || (topics.has(saved.last) ? saved.last : null);
       if (Array.isArray(saved.savedIds)) clean.savedIds = [...new Set(saved.savedIds.filter(id => byId.has(id)))];
       for (const group of TOPICS) {
         const source = saved.blocks[group.key];
-        if (!source) continue;
         const block = {};
         const answerIds = (saved.heightQuestionsRevision ?? 0) < HEIGHT_QUESTIONS_REVISION
           ? group.ids.filter(id => !REVISED_HEIGHT_QUESTIONS.has(id))
           : group.ids;
-        const result = cleanAnswers(answerIds, source.result);
-        const hasRound = source.round && Array.isArray(source.round.ids);
-        if (source.radio === 0 || source.radio === 1) block.radio = source.radio;
+        const result = cleanAnswers(answerIds, results);
+        const current = lastGroup === group ? lastQuestion : source?.round?.current;
+        if (source?.radio === 0 || source?.radio === 1) block.radio = source.radio;
         if (group.ids.every(id => result[id])) {
           block.result = result;
-          block.lastIds = group.ids.filter(id => Array.isArray(source.lastIds) && source.lastIds.includes(id));
-          if (hasRound) {
-            const ids = group.ids.filter(id => source.round.ids.includes(id));
-            if (ids.length) block.round = newRound(ids, cleanAnswers(ids, source.round.answers), source.round.current);
+          block.lastIds = group.ids.filter(id => Array.isArray(source?.lastIds) && source.lastIds.includes(id));
+          if (Number.isInteger(source?.lastImproved) && source.lastImproved > 0) block.lastImproved = source.lastImproved;
+          const ids = group.ids.filter(id => roundIds.has(id));
+          if (ids.length) block.round = newRound(ids, cleanAnswers(ids, drafts), current);
+        } else {
+          const answers = {...result, ...cleanAnswers(answerIds, drafts)};
+          if (Object.keys(answers).length || (roundIds.has(current) && group.ids.includes(current))) {
+            block.round = newRound(group.ids, answers, current);
           }
-        } else if (hasRound || Object.keys(result).length) {
-          // Een eerder afgeronde werkorder kan nieuwe vragen bevatten.
-          const answers = cleanAnswers(answerIds, source.round?.answers);
-          const current = Object.keys(result).length ? null : source.round?.current;
-          block.round = newRound(group.ids, {...result, ...answers}, current);
         }
-        clean.blocks[group.key] = block;
+        if (Object.keys(block).length) clean.blocks[group.key] = block;
       }
       return clean;
     }
@@ -175,6 +195,10 @@ function goQuestion(id) {
 function finishRound() {
   const b = block(), r = b.round;
   if (answeredCount(r) !== r.ids.length) return;
+  b.lastImproved = b.result ? r.ids.filter(id => {
+    const required = byId.get(id).correct.length;
+    return points(id, b.result) < required && points(id, r.answers) === required;
+  }).length : 0;
   b.result = {...b.result, ...r.answers};
   b.lastIds = r.ids;
   delete b.round;
@@ -214,11 +238,12 @@ function renderHome() {
     <img class="shift-photo" src="./img/terminal/kade.webp" alt="Een heftruck bij de verlichte loods aan de kade bij het begin van de dienst" fetchpriority="high">
     <div class="shift-copy"><p class="kicker">Oefendienst · Heftruck &amp; reachtruck</p>
       <h1 id="screen-title" tabindex="-1">Jouw dienst op<br><em>de terminal</em></h1>
+      <p class="course-intro">Bereid je voor op de cursus <strong>Veilig werken met een heftruck</strong>. Leer de theorie en oefen met vragen over onderwerpen die ook op het examen kunnen terugkomen.</p>
       <p>${finished === TOPICS.length
         ? `Je hebt alle ${TOPICS.length} werkorders afgerond. Open je logboek en neem je bewaarde vragen mee naar de praktijktraining.`
-        : `Rond vóór de praktijktraining alle ${TOPICS.length} werkorders af. Je haalt een truck op, beoordeelt een pompkist en maakt de vracht klaar. Elke beantwoorde vraag levert één hefpunt op en tilt je last een stukje hoger.`}</p>
+        : `Begin met één werkorder van 5 tot 7 vragen. Na elk blok zie je je resultaat en krijg je een stempel in je logboek. Je kunt later verder oefenen.`}</p>
       <div class="actions"><button class="btn shift-start" data-action="series">${startLabel}</button>
-      <button class="hero-link" data-action="topics">Kies een werkorder</button></div>
+      <button class="hero-link" data-action="topics">Kies een thema</button></div>
     </div></section>
     <div class="shift-dashboard">${liftMeter()}<div class="shift-strip"><div><p class="kicker">Jouw dienst</p><strong>${finished} van ${TOPICS.length} werkorders afgerond</strong>
       <div class="segments" aria-hidden="true">${TOPICS.map(group => `<i class="${complete(group) ? 'done' : block(group)?.round ? 'started' : ''}"></i>`).join('')}</div>
@@ -232,8 +257,14 @@ function renderHome() {
       </ol>
     </section>` : ''}
     <section class="home-info" aria-labelledby="topics-title"><div class="section-head">
-      <div><h2 id="topics-title" tabindex="-1">Werkorders van deze dienst</h2><p class="board-intro">Kies hieronder zelf een onderwerp. Wil je later verder oefenen? Open de app dan op hetzelfde apparaat en in dezelfde browser.</p></div>
-    </div><div class="order-grid">${TOPICS.map(topicCard).join('')}</div></section>`;
+      <div><h2 id="topics-title" tabindex="-1">Werkorders van deze dienst</h2><p class="board-intro">Volg de voorgestelde route of open een thema. Je voortgang blijft bewaard op dit apparaat en in deze browser.</p></div>
+    </div><div class="work-stages">${ROUTE_STAGES.map(stage => {
+      const stageDone = stage.groups.filter(complete).length;
+      const opened = !next || stage.groups.includes(next);
+      return `<details class="work-stage" ${opened ? 'open' : ''}>
+        <summary><strong>${stage.name}</strong><span>${stageDone === stage.groups.length ? 'Afgerond' : stageDone + '/' + stage.groups.length + ' afgerond'}</span></summary>
+        <div class="order-grid">${stage.groups.map(topicCard).join('')}</div></details>`;
+    }).join('')}</div></section>`;
 }
 function recommendedOrder() {
   const last = topics.get(progress.last);
@@ -257,6 +288,7 @@ function renderBriefing() {
 
 function renderRadio() {
   const order = WORK_ORDERS[topic.key], selection = block().radio;
+  if (!order.replies) return '';
   return `<section class="radio-card" aria-labelledby="radio-title"><p class="kicker">Ploegoverdracht · ${order.location}</p>
     <h2 id="radio-title">Je collega aan de portofoon</h2><p>${order.call}</p>
     <div class="radio-replies">${order.replies.map(([label],i) =>
@@ -276,7 +308,20 @@ function bookmarkLabel(id) {
 
 function artwork(q) {
   if (!q.image) return '';
-  return `<figure class="question-art${q.diagram || q.feedbackImage ? ' diagram' : ''}"><img src="./img/${q.image}.webp" alt="${q.alt}"></figure>`;
+  return `<figure class="question-art${q.diagram || q.feedbackImage ? ' diagram' : ''}${q.wideArt ? ' wide-art' : ''}">
+    <img src="./img/${q.image}.webp" alt="${q.alt}">${q.chartTable ? loadChartTable() : ''}</figure>`;
+}
+function loadChartTable() {
+  const rows = [
+    [5030, 910, 990, 1080, 1200],
+    [4830, 1060, 1150, 1260, 1400],
+    [4100, 1170, 1280, 1400, 1550],
+    [3300, 1210, 1320, 1440, 1600]
+  ];
+  return `<details class="chart-table"><summary>Lees het lastdiagram als tabel</summary>
+    <table><caption>Maximaal gewicht in kg per hefhoogte en lastzwaartepuntafstand</caption>
+    <thead><tr><th scope="col">Hefhoogte</th>${[800,700,600,500].map(distance => `<th scope="col">${distance} mm</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(([height, ...weights]) => `<tr><th scope="row">${height} mm</th>${weights.map(weight => `<td>${weight}</td>`).join('')}</tr>`).join('')}</tbody></table></details>`;
 }
 function feedbackBody(q, choices) {
   return `<ul class="review-options">${q.options.map((option, i) => {
@@ -312,7 +357,7 @@ function renderQuestion() {
     <details class="question-map"><summary>Vragenoverzicht <span id="round-count">${count}/${r.ids.length} beantwoord</span></summary>
     <div class="map-sections"><div class="map-grid">${r.ids.map((key,i) =>
       `<button class="map-button${r.answers[key] ? ' filled' : ''}" data-action="jump" data-id="${key}" ${key === id ? 'aria-current="step"' : ''} aria-label="Vraag ${i+1}, ${r.answers[key] ? 'beantwoord' : 'open'}">${i+1}</button>`).join('')}</div></div></details>
-    <article class="question-card playing-card"><div class="question-layout${q.image ? ' with-art' : ''}">
+    <article class="question-card playing-card"><div class="question-layout${q.wideArt ? ' with-wide-art' : q.image ? ' with-art' : ''}">
       <h1 id="screen-title" tabindex="-1">${q.prompt}</h1>${artwork(q)}
       <div class="question-content">${choicesForm(q, choices)}</div></div>
       ${liftMeter(true)}
@@ -354,16 +399,25 @@ function renderResult() {
   const b = block(), errors = topic.ids.filter(missed).length, correct = topic.ids.length - errors;
   const repeatCount = repeatIds().length, order = WORK_ORDERS[topic.key], next = recommendedOrder();
   const finished = TOPICS.filter(complete).length;
+  const stage = ROUTE_STAGES.find(item => item.groups.includes(topic));
+  const stageDone = stage.groups.filter(complete).length;
   const focusQuestion = byId.get(topic.ids.find(missed) || topic.ids[0]);
   return `<section class="work-area result">
     <button class="text-button back-link" data-action="topics">Werkorderbord</button>
     <header class="result-banner signed-order"><div><p class="eyebrow">WO ${orderNumber(topic)} afgerond · ${finished} van ${TOPICS.length} werkorders</p>
       <h1 id="screen-title" tabindex="-1">${order.title}</h1><p>${topic.name}</p></div><div class="completion-stamp"><span>Afgerond</span><strong>WO ${orderNumber(topic)}</strong></div></header>
+    <section class="work-reward" aria-label="Stempel voor deze werkorder">
+      <div><p class="kicker">Stempel in je logboek</p><h2>${order.stamp}</h2>
+      <p class="reward-stage">${stage.name} · ${stageDone === stage.groups.length ? 'fase afgerond' : `${stageDone}/${stage.groups.length} afgerond`}</p></div>
+      <div class="reward-count"><strong>${correct}/${topic.ids.length} juist</strong>
+      <span>${b.lastImproved ? `${b.lastImproved} ${b.lastImproved === 1 ? 'vraag verbeterd' : 'vragen verbeterd'} bij je herhaling` : errors ? 'Je kunt je leerpunten opnieuw oefenen.' : 'Alle antwoorden volledig goed.'}</span></div>
+    </section>
     <section class="result-body"><h2>Wat neem je mee?</h2>
       <p class="result-intro">${errors ? `${correct} van de ${topic.ids.length} vragen volledig goed. Bekijk de uitleg bij ${errors === 1 ? 'de vraag die je nog kunt aanscherpen' : 'de '+errors+' vragen die je nog kunt aanscherpen'}.` : 'Je hebt alle vragen volledig goed. Bij het terugkijken lees je de uitleg en kun je vragen bewaren voor de praktijktraining.'}</p>
       <div class="debrief-example"><p class="order-code">Uit jouw werkorder</p><h3>${focusQuestion.prompt}</h3><p>${focusQuestion.feedback}</p></div>
       <div class="actions result-actions"><button class="btn ${errors ? 'primary' : 'secondary'}" data-action="review-missed" ${errors ? '' : 'disabled'}>Bekijk mijn leerpunten (${errors})</button>
-        <button class="btn ${errors ? 'secondary' : 'primary'}" data-action="review-all">Bekijk alle ${topic.ids.length} antwoorden</button></div>
+        <button class="btn ${errors ? 'secondary' : 'primary'}" data-action="review-all">Bekijk alle ${topic.ids.length} antwoorden</button>
+        ${errors ? '<button class="btn secondary" data-action="repeat-learn">Oefen mijn leerpunten opnieuw</button>' : ''}</div>
       <details class="details-panel"><summary>Resultaat en opnieuw oefenen</summary>
       <p>${totalPoints(topic.ids,b.result)} van ${maxPoints(topic.ids)} antwoordpunten.</p>
       ${b.lastIds?.length && b.lastIds.length < topic.ids.length ? `<p>Laatste herhaling · ${totalPoints(b.lastIds,b.result)} van ${maxPoints(b.lastIds)} antwoordpunten.</p>` : ''}
@@ -371,9 +425,9 @@ function renderResult() {
         <label><input id="repeat-missed" type="checkbox" ${repeatMissed ? 'checked' : ''} ${errors ? '' : 'disabled'}> Fout of deels goed (${errors})</label>
         <label><input id="repeat-right" type="checkbox" ${repeatRight ? 'checked' : ''} ${correct ? '' : 'disabled'}> Volledig goed (${correct})</label></fieldset>
       <button class="btn secondary" data-action="repeat" ${repeatCount ? '' : 'disabled'}>${repeatButtonText(repeatCount)}</button></details>
-    </section>${photoDebrief()}${teachingClip(topic.key)}${renderRadio()}
-    <div class="actions all-actions"><button class="btn primary" data-action="${next ? 'series' : 'overview'}">${next ? 'Verder met WO '+orderNumber(next)+' · '+WORK_ORDERS[next.key].title : 'Bekijk je dienstoverdracht'}</button>
-      <button class="text-button" data-action="topics">Werkorderbord</button></div></section>`;
+    </section><div class="actions all-actions"><button class="btn primary" data-action="${next ? 'series' : 'overview'}">${next ? 'Volgende werkorder · '+next.name : 'Bekijk je dienstoverdracht'}</button>
+      ${next ? '<button class="text-button" data-action="overview">Klaar voor nu</button>' : ''}</div>
+    ${photoDebrief()}${teachingClip(topic.key)}${renderRadio()}</section>`;
 }
 function renderReview() {
   const id = reviewIds[reviewIndex], q = byId.get(id), answers = block().result;
@@ -383,7 +437,7 @@ function renderReview() {
   return `<section class="work-area review">
     <button class="text-button back-link" data-action="result">Terug naar de nabespreking</button>
     <div class="progress-head"><p class="eyebrow">Nakijken · ${topic.name}</p><span>Vraag ${reviewIndex+1} / ${reviewIds.length}</span></div>
-    <article class="question-card"><div class="question-layout${q.image ? ' with-art' : ''}">
+    <article class="question-card"><div class="question-layout${q.wideArt ? ' with-wide-art' : q.image ? ' with-art' : ''}">
       <h1 id="screen-title" tabindex="-1">${q.prompt}</h1>${artwork(q)}
       <div class="question-content"><h2 class="verdict">${verdict}</h2>${feedbackBody(q, answers[id])}
         <button class="note-btn" aria-pressed="${progress.savedIds.includes(id)}" data-action="bookmark" data-id="${id}">${bookmarkLabel(id)}</button></div></div>
@@ -397,11 +451,13 @@ function renderOverview() {
   return `<section class="work-area result"><button class="text-button back-link" data-action="topics">Werkorderbord</button>
     <header class="result-banner"><div><p class="eyebrow">Logboek · Intern transport</p><h1 id="screen-title" tabindex="-1">${allDone ? 'Dienst overgedragen' : 'Mijn logboek'}</h1>
     <p>${allDone ? `Je hebt alle ${QUESTIONS.length} vragen geoefend. Neem je bespreekpunten mee naar de praktijktraining.` : `${finished.length} van de ${TOPICS.length} werkorders afgerond.`}</p></div></header>
-    ${liftMeter()}<section class="result-body"><h2>Bespreken tijdens de training</h2>
+    ${liftMeter()}${finished.length ? `<section class="result-body stamp-book"><h2>Je werkorderstempels</h2>
+      <ul>${finished.map(group => `<li><strong>${WORK_ORDERS[group.key].stamp}</strong><span>${group.name}</span></li>`).join('')}</ul></section>` : ''}
+    <section class="result-body"><h2>Bespreken tijdens de training</h2>
     ${saved.length ? `<ul class="log-list">${saved.map(q => `<li><details><summary>${q.prompt}</summary><p>${q.feedback}</p>
       <button class="text-button" data-action="remove-note" data-id="${q.id}">Verwijder dit bespreekpunt</button></details></li>`).join('')}</ul>` :
       '<p class="result-intro">Wil je iets aan de trainer vragen? Kies bij de uitleg van een vraag voor ‘Bewaar voor de training’. Je vindt die vragen hier terug.</p>'}
-    </section>${finished.length ? `<section class="home-info"><div class="section-head"><h2>Afgeronde werkorders</h2></div><div class="order-grid">${finished.map(topicCard).join('')}</div></section>` : ''}
+    </section>
     <div class="actions all-actions">${allDone ? `<button class="btn secondary" data-action="restart-series">Nieuwe oefendienst starten</button>` : '<button class="btn primary" data-action="series">Verder met de dienst</button>'}</div></section>`;
 }
 
@@ -492,6 +548,11 @@ document.addEventListener('click', event => {
     case 'review-previous': reviewIndex--; setScreen('review'); break;
     case 'review-next': reviewIndex++; setScreen('review'); break;
     case 'result': setScreen('result'); break;
+    case 'repeat-learn':
+      repeatMissed = true;
+      repeatRight = false;
+      startRepeat();
+      break;
     case 'repeat': startRepeat(); break;
     case 'restart-series':
       dialog.returnValue = 'cancel';

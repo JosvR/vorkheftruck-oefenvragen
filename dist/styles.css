@@ -585,3 +585,51 @@ body { background: linear-gradient(160deg, #f8faf8, #eaf0ee 75%); }
   .load-stage,.mast-stage,.order-thumbnail img { transition:none; }
   .order-card:hover .order-thumbnail img { transform:none; }
 }
+
+/* Werkorders op het bord en in het logboek */
+.shift-copy .course-intro { margin-bottom: .65rem; }
+.segments i { flex: 1; }
+.work-stages { display: grid; gap: 12px; }
+.work-stage { border: 1px solid #c8d6d3; border-radius: 12px; background: #f6faf8; }
+.work-stage > summary {
+  display: flex; align-items: center; gap: 12px; padding: 14px 17px; cursor: pointer; list-style: none;
+}
+.work-stage > summary::-webkit-details-marker { display: none; }
+.work-stage > summary::before { content: '›'; color: #08616c; font-size: 1.45rem; line-height: 1; }
+.work-stage[open] > summary::before { transform: rotate(90deg); }
+.work-stage > summary strong { flex: 1; }
+.work-stage > summary span { color: #365a5d; font-size: .84rem; text-align: right; }
+.work-stage .order-grid { padding: 0 12px 12px; }
+.order-thumbnail .lesson-photo, .brief-scene .lesson-photo { object-fit: contain; background: #f1f6f5; }
+.work-reward {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 14px;
+  padding: clamp(16px, 3vw, 28px); border: 1px solid #b5d1c5; border-left: 5px solid #197b67;
+  border-radius: 11px; background: #e9f6ef; color: #124b42;
+  animation: reward-in .22s ease-out both;
+}
+.work-reward .kicker { color: #286259; margin-bottom: 3px; }
+.work-reward h2 { font-size: clamp(1.18rem, 3vw, 1.68rem); line-height: 1.12; }
+.reward-stage { margin-top: 5px; color: #375754; font-size: .84rem; }
+.reward-count { display: grid; gap: 3px; text-align: right; font-size: .85rem; }
+.reward-count strong { font-size: 1.16rem; white-space: nowrap; }
+.stamp-book ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 195px),1fr)); gap: 10px; list-style: none; padding: 0; margin: 13px 0 0; }
+.stamp-book li { display: grid; gap: 3px; padding: 11px 13px; border: 1px solid #b9d9cc; border-radius: 8px; color: #14584f; background: #edf8f2; }
+.stamp-book li span { color: #375754; font-size: .86rem; }
+
+.question-layout.with-wide-art { grid-template-columns: minmax(0, 1fr); }
+.question-art.wide-art { grid-area: auto; width: min(100%, 565px); }
+.question-art.wide-art img { height: auto; max-height: 355px; }
+.chart-table { background: white; padding: 9px 10px; font-size: .84rem; }
+.chart-table > summary { color: #0a596d; font-weight: 650; cursor: pointer; }
+.chart-table table { width: 100%; border-collapse: collapse; text-align: center; margin-top: 9px; }
+.chart-table caption { text-align: left; margin-bottom: 5px; }
+.chart-table th, .chart-table td { padding: 5px 2px; border: 1px solid #c5d6dc; }
+.chart-table th { background: #eaf4f8; }
+
+@keyframes reward-in { from { opacity: .4; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .work-reward { animation: none; } }
+@media (max-width: 530px) {
+  .work-stage > summary { padding-inline: 12px; gap: 8px; }
+  .work-reward { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .reward-count { text-align: left; }
+}
