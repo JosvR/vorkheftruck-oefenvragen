@@ -1,10 +1,12 @@
 'use strict';
 
-const VERSION = 'V01.06.00';
+const VERSION = 'V01.06.01';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
 const LEGACY_QUESTION_COUNT = 57;
+const HEIGHT_QUESTIONS_REVISION = 1;
+const REVISED_HEIGHT_QUESTIONS = new Set(['H02', 'H03']);
 const byId = new Map(QUESTIONS.map(q => [q.id, q]));
 const TOPICS = [
   {key: 'arbo', name: 'Arbowet en afspraken', ids: ['A01','A02','A03','A04','A05','V09','V10','V15']},
@@ -40,7 +42,7 @@ function newRound(ids, answers = {}, current = null) {
   return {ids, answers, current: ids.includes(current) ? current : ids.find(id => !answers[id]) || ids[0]};
 }
 
-function emptyProgress() { return {blocks: {}, last: null, savedIds: []}; }
+function emptyProgress() { return {blocks: {}, last: null, savedIds: [], heightQuestionsRevision: HEIGHT_QUESTIONS_REVISION}; }
 
 // In de vorige versie werden antwoorden los van elkaar nagekeken.
 // Alleen onderwerpen waarvan alle antwoorden al waren nagekeken krijgen een resultaat.
@@ -90,7 +92,10 @@ function loadProgress() {
         const source = saved.blocks[group.key];
         if (!source) continue;
         const block = {};
-        const result = cleanAnswers(group.ids, source.result);
+        const answerIds = (saved.heightQuestionsRevision ?? 0) < HEIGHT_QUESTIONS_REVISION
+          ? group.ids.filter(id => !REVISED_HEIGHT_QUESTIONS.has(id))
+          : group.ids;
+        const result = cleanAnswers(answerIds, source.result);
         const hasRound = source.round && Array.isArray(source.round.ids);
         if (source.radio === 0 || source.radio === 1) block.radio = source.radio;
         if (group.ids.every(id => result[id])) {
@@ -102,7 +107,7 @@ function loadProgress() {
           }
         } else if (hasRound || Object.keys(result).length) {
           // Een eerder afgeronde werkorder kan nieuwe vragen bevatten.
-          const answers = cleanAnswers(group.ids, source.round?.answers);
+          const answers = cleanAnswers(answerIds, source.round?.answers);
           const current = Object.keys(result).length ? null : source.round?.current;
           block.round = newRound(group.ids, {...result, ...answers}, current);
         }
