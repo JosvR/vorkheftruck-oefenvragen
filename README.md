@@ -1,6 +1,6 @@
 # Vorkheftruck oefenvragen · Jouw dienst op de terminal
 
-Nederlandstalige oefenapp van DTS voor de voorbereiding op de cursus *Veilig werken met een heftruck*. Versie **V01.08.00**.
+Nederlandstalige oefenapp van DTS voor de voorbereiding op de cursus *Veilig werken met een heftruck*. Versie **V01.08.01**.
 
 ## Zo oefent een deelnemer
 

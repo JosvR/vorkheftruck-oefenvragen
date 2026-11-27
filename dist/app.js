@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.08.00';
+const VERSION = 'V01.08.01';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
