@@ -4,7 +4,7 @@
 const WORK_ORDERS = {
   afspraken: {
     location: 'Werkvoorbereiding', title: 'Controleer de werkafspraken', stamp: 'Werkafspraken gecheckt',
-    briefing: 'Je krijgt een nieuwe rijroute, een stagiair in de ploeg en een last met een gevarenetiket. Ga na wat je voor vertrek moet regelen.',
+    briefing: 'Je krijgt een nieuwe rijroute, een stagiair in de ploeg en een last met een gevarenetiket. Ga na wat je voor vertrek moet regelen en welke Life-Saving Rules op de route gelden.',
     photo: 'cursus/ghs', alt: 'Rood gevarenpictogram met een vlam'
   },
   transport: {
@@ -44,8 +44,8 @@ const WORK_ORDERS = {
   },
   pallets: {
     location: 'Buffer aan de kade', title: 'Neem de drager veilig op', stamp: 'Drager gecontroleerd',
-    briefing: 'Er staan europallets, een Big Bag en een deels gevulde IBC klaar. Controleer per drager waar de vorken horen en hoe je de last behandelt.',
-    photo: 'cursus/europallet', alt: 'Houten europallet met openingen voor de vorken'
+    briefing: 'Er staan pallets van het type EPAL europallet, een Big Bag en een deels gevulde IBC klaar. Controleer per drager waar de vorken horen en hoe je de last behandelt.',
+    photo: 'cursus/europallet', alt: 'Houten EPAL europallet met openingen voor de vorken'
   },
   stellingen: {
     location: 'Magazijn', title: 'Kies een plek in de stelling', stamp: 'Opslagplek beoordeeld',

@@ -1,6 +1,6 @@
 'use strict';
 
-const VERSION = 'V01.07.00';
+const VERSION = 'V01.08.00';
 const STORAGE_KEY = 'dts-heftruck-oefenen-blokken-v2';
 const PREVIOUS_KEY = 'dts-heftruck-oefenen-blokken-v1';
 const LEGACY_KEY = 'dts-heftruck-oefenen-V01.01.00';
@@ -10,12 +10,12 @@ const REVISED_HEIGHT_QUESTIONS = new Set(['H02', 'H03']);
 const byId = new Map(QUESTIONS.map(q => [q.id, q]));
 const TOPICS = [
   {key: 'arbo', name: 'Arbowet en verantwoordelijkheden', ids: ['A01','A02','A03','A04','A05','V09','V10']},
-  {key: 'afspraken', name: 'Werkafspraken en gevarenetiketten', ids: ['V15','N01','N02','N03','N04']},
+  {key: 'afspraken', name: 'Werkafspraken en gevarenetiketten', ids: ['V15','N01','N02','N03','N04','N55']},
   {key: 'transport', name: 'Transportmiddelen kiezen', ids: ['N05','N06','N07','N08','N09','N10']},
   {key: 'voorzet', name: 'Voorzetapparatuur', ids: ['N11','N12','N13','N14','N15','K15','R18']},
   {key: 'techniek', name: 'Heftruck Techniek', ids: ['N16','N17','N18','N19','N20','N21','N22']},
   {key: 'energie', name: 'Aandrijving, accu en Ex-zones', ids: ['N23','N24','N25','N26','N27']},
-  {key: 'controle', name: 'Aanvangscontrole en storingen', ids: ['V01','N29','N28','V04','R20','R15']},
+  {key: 'controle', name: 'Aanvangscontrole en storingen', ids: ['V01','N56','N53','N54','N29','N28','V04','R20','R15']},
   {key: 'verkeer', name: 'Verkeer, zicht en bochten', ids: ['V03','V14','R02','K13','V13','N30','R22']},
   {key: 'ondergrond', name: 'Ondergrond en transportroute', ids: ['K05','K06','K07','R06','R11','R14','N31']},
   {key: 'hellingen', name: 'Rijden op hellingen', ids: ['K12','R07','R12','N32','N33']},
@@ -26,7 +26,7 @@ const TOPICS = [
   {key: 'opnemen', name: 'Last opnemen en vervoeren', ids: ['K10','V17','R16','V16','V12','R04','R21']},
   {key: 'pallets', name: 'Pallets en andere lastdragers', ids: ['N41','N42','N43','N44','N45','N52','K16']},
   {key: 'stellingen', name: 'Magazijnstellingen', ids: ['N46','N47','N48','N49','K11','R01','R13']},
-  {key: 'stapelen', name: 'Laden, lossen en parkeren', ids: ['K01','R05','N50','N51','K04','R03']}
+  {key: 'stapelen', name: 'Laden, lossen en parkeren', ids: ['K01','R05','N50','N51','K04','R03','N57']}
 ];
 const ROUTE_STAGES = [
   {name: 'Voor je vertrekt', groups: TOPICS.slice(0, 7)},
@@ -241,7 +241,7 @@ function renderHome() {
       <p class="course-intro">Bereid je voor op de cursus <strong>Veilig werken met een heftruck</strong>. Leer de theorie en oefen met vragen over onderwerpen die ook op het examen kunnen terugkomen.</p>
       <p>${finished === TOPICS.length
         ? `Je hebt alle ${TOPICS.length} werkorders afgerond. Open je logboek en neem je bewaarde vragen mee naar de praktijktraining.`
-        : `Begin met één werkorder van 5 tot 7 vragen. Na elk blok zie je je resultaat en krijg je een stempel in je logboek. Je kunt later verder oefenen.`}</p>
+        : `Begin met één werkorder. Na elk blok zie je je resultaat en krijg je een stempel in je logboek. Je kunt later verder oefenen.`}</p>
       <div class="actions"><button class="btn shift-start" data-action="series">${startLabel}</button>
       <button class="hero-link" data-action="topics">Kies een thema</button></div>
     </div></section>

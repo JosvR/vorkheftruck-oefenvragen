@@ -46,11 +46,11 @@ const SCENES = {
     "see": "De buitenkant vertelt je onvoldoende. Voor het passende lastdiagram heb je onder meer het lastgewicht, de lastzwaartepuntafstand en de gewenste hefhoogte nodig."
   },
   "opnemen": {
-    "alt": "Blauw transportrek met twee rechthoekige vorkopnames onderaan",
+    "alt": "Blauw transportrek met twee rechthoekige vorkopnames die van voor tot achter doorlopen",
     "x": 64,
     "y": 83,
     "ask": "Welke openingen horen bij de vorken?",
-    "see": "Onderaan het rek zie je twee rechthoekige vorkopnames. Controleer de instructie van het rek en stel de vorken af op de opnames."
+    "see": "Onderaan het rek zie je twee rechthoekige vorkopnames. De kokers lopen helemaal door tot de andere kant van het rek. Controleer de instructie van het rek en stel de vorken af op de opnames."
   },
   "stapelen": {
     "alt": "Geopende vrachtwagentrailer en een pallet op de laadplaats",
